@@ -1,0 +1,2752 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADN — Avaliação Digital e Notas</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='78' font-size='70' text-anchor='middle'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth.js/1.6.0/mammoth.browser.min.js" onerror="window.__mammothFailed=true"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" onerror="window.__pdfjsFailed=true"></script>
+<style>
+:root{
+  --ink:#121327; --bg:#F4F4F2; --card:#FFFFFF; --card-2:#F6F5F1;
+  --accent:#0E9B8A; --accent-ink:#FFFFFF; --accent-2:#7C5CFC;
+  --danger:#C1432E; --danger-bg:#FBEAE6; --success:#2E8B57; --success-bg:#E5F3EA;
+  --border:#DEDCD3; --muted:#5C5D6B; --header-bg:#0F1024; --header-text:#F4F4F2;
+  --header-bg-2:#181A3A;
+  --font-head:'Space Grotesk','Arial Narrow',sans-serif; --font-body:'Inter',system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#ECEBF4; --bg:#0B0C16; --card:#151726; --card-2:#1B1D30;
+    --accent:#2FD6C0; --accent-ink:#052420; --accent-2:#A78BFA;
+    --danger:#E2685A; --danger-bg:#341C19; --success:#57C583; --success-bg:#123222;
+    --border:#2A2C42; --muted:#A2A3B8; --header-bg:#07060F; --header-text:#ECEBF4; --header-bg-2:#14132A;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#ECEBF4; --bg:#0B0C16; --card:#151726; --card-2:#1B1D30;
+  --accent:#2FD6C0; --accent-ink:#052420; --accent-2:#A78BFA;
+  --danger:#E2685A; --danger-bg:#341C19; --success:#57C583; --success-bg:#123222;
+  --border:#2A2C42; --muted:#A2A3B8; --header-bg:#07060F; --header-text:#ECEBF4; --header-bg-2:#14132A;
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+html,body{height:100%;margin:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--font-body);
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  -webkit-font-smoothing:antialiased; line-height:1.5; font-size:15px;
+}
+h1,h2,h3{font-family:var(--font-head); margin:0;}
+.app{max-width:760px; margin:0 auto; min-height:100%; display:flex; flex-direction:column;}
+button{font-family:var(--font-body); cursor:pointer;}
+a{color:var(--accent);}
+
+/* ---------- header ---------- */
+header.top{background:linear-gradient(135deg, var(--header-bg) 0%, var(--header-bg-2) 100%); color:var(--header-text); padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px 18px; position:sticky; top:0; z-index:20;}
+.brand-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.brand{display:flex; align-items:center; gap:10px;}
+.brand-mark{width:34px; height:34px; flex:none;}
+.brand-text h1{font-size:20px; font-weight:700; letter-spacing:0.01em;}
+.brand-text .sub{font-size:11.5px; color:rgba(243,246,245,0.62); letter-spacing:0.03em;}
+.profile-btn{background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.16); color:var(--header-text); border-radius:20px; padding:6px 12px; font-size:12.5px; display:flex; align-items:center; gap:6px;}
+.tabbar{display:flex; gap:4px; margin-top:14px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+.tabbar::-webkit-scrollbar{display:none;}
+.tab{flex:none; background:transparent; border:none; color:rgba(243,246,245,0.55); font-family:var(--font-head); font-weight:600; font-size:13px; padding:8px 12px; border-radius:9px; white-space:nowrap;}
+.tab.active{color:var(--header-text); background:rgba(255,255,255,0.12);}
+
+main{flex:1; padding:20px 18px 100px 18px;}
+.screen{display:none;}
+.screen.active{display:block; animation:rise 260ms ease;}
+@keyframes rise{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+@media (prefers-reduced-motion:reduce){.screen.active{animation:none;}}
+
+/* ---------- generic ---------- */
+.card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px;}
+.card + .card{margin-top:12px;}
+.stack{display:flex; flex-direction:column; gap:12px;}
+.row{display:flex; gap:10px;}
+.row.wrap{flex-wrap:wrap;}
+.grow{flex:1;}
+.muted{color:var(--muted);}
+.small{font-size:12.5px;}
+.section-title{font-size:18px; font-weight:600; margin:22px 0 10px 0; display:flex; align-items:center; gap:8px;}
+.section-title:first-child{margin-top:0;}
+.pill{display:inline-flex; align-items:center; gap:5px; font-family:var(--font-head); font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px; background:var(--card-2); color:var(--muted); border:1px solid var(--border);}
+.pill.accent{background:color-mix(in srgb, var(--accent) 15%, var(--card)); color:var(--accent); border-color:transparent;}
+.pill.warn{background:var(--danger-bg); color:var(--danger); border-color:transparent;}
+.divider{height:1px; background:var(--border); margin:14px 0; border:none;}
+
+.field{margin-bottom:12px;}
+.field label{display:block; font-size:12.5px; color:var(--muted); margin-bottom:5px; font-weight:500;}
+.field input[type=text], .field input[type=number], .field input[type=password], .field select, .field textarea{
+  width:100%; padding:11px 12px; border-radius:9px; border:1px solid var(--border); background:var(--bg); color:var(--ink);
+  font-family:var(--font-body); font-size:15px;
+}
+.field textarea{min-height:80px; resize:vertical;}
+.field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--accent); outline-offset:1px;}
+.field .hint{font-size:11.5px; color:var(--muted); margin-top:4px;}
+
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:7px; font-family:var(--font-head); font-weight:600; font-size:14.5px; border-radius:10px; padding:12px 18px; border:none; transition:transform 120ms ease, opacity 120ms ease;}
+.btn:active{transform:scale(0.98);}
+.btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.btn-primary{background:var(--accent); color:var(--accent-ink);}
+.btn-primary:disabled{opacity:0.4; cursor:not-allowed;}
+.btn-ghost{background:transparent; color:var(--ink); border:1px solid var(--border);}
+.btn-danger{background:var(--danger); color:#fff;}
+.btn-block{width:100%;}
+.btn-sm{padding:8px 12px; font-size:13px; border-radius:8px;}
+.icon-btn{background:var(--card-2); border:1px solid var(--border); border-radius:9px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:var(--ink); flex:none;}
+
+.empty{text-align:center; padding:34px 16px; color:var(--muted);}
+.empty .big{font-size:34px; margin-bottom:8px;}
+
+table.simple{width:100%; border-collapse:collapse; font-size:13.5px;}
+table.simple th, table.simple td{border:1px solid var(--border); padding:7px 8px; text-align:left;}
+table.simple th{background:var(--card-2); font-family:var(--font-head); font-size:12px;}
+
+/* ---------- role select ---------- */
+.role-screen{padding-top:8vh;}
+.role-hero{text-align:center; margin-bottom:26px;}
+.role-hero .brand-mark{width:64px; height:64px; margin:0 auto 14px auto;}
+.role-hero h2{font-size:26px;}
+.role-hero p{color:var(--muted); max-width:34ch; margin:8px auto 0 auto; font-size:14.5px;}
+.role-card{display:flex; align-items:center; gap:14px; padding:20px; border-radius:14px; border:1px solid var(--border); background:var(--card); margin-bottom:12px; text-align:left; width:100%;}
+.role-card .ricon{width:44px; height:44px; border-radius:12px; background:color-mix(in srgb, var(--accent) 16%, var(--card)); display:flex; align-items:center; justify-content:center; flex:none;}
+.role-card b{font-family:var(--font-head); font-size:16px; display:block;}
+.role-card span{font-size:13px; color:var(--muted);}
+
+/* ---------- dashboard cards ---------- */
+.stat-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+.stat-card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px;}
+.stat-num{font-family:var(--font-head); font-size:24px; font-weight:700;}
+.stat-label{font-size:12px; color:var(--muted); margin-top:2px;}
+
+.test-item{display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--border);}
+.test-item:last-child{border-bottom:none;}
+.test-item .ti-main{flex:1; min-width:0;}
+.test-item .ti-title{font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.test-item .ti-meta{font-size:12px; color:var(--muted); margin-top:2px;}
+.code-chip{font-family:var(--font-head); font-weight:700; letter-spacing:0.06em; background:var(--card-2); border:1px dashed var(--border); border-radius:8px; padding:4px 9px; font-size:13px;}
+
+/* ---------- question editor ---------- */
+.qtype-toggle{display:flex; gap:8px; margin-bottom:14px;}
+.qtype-toggle button{flex:1; padding:10px; border-radius:9px; border:1px solid var(--border); background:var(--card-2); font-family:var(--font-head); font-weight:600; font-size:13.5px; color:var(--muted);}
+.qtype-toggle button.active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+.opt-row{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+.opt-row input[type=text]{flex:1;}
+.opt-row input[type=radio]{width:18px; height:18px; accent-color:var(--accent);}
+.vf-row{display:flex; gap:10px;}
+.vf-row label{flex:1; display:flex; align-items:center; gap:8px; padding:11px; border:1px solid var(--border); border-radius:9px; background:var(--card-2); font-size:14px;}
+.attach-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;}
+.attach-chip{display:inline-flex; align-items:center; gap:6px; background:var(--card-2); border:1px solid var(--border); border-radius:20px; padding:5px 10px; font-size:12px;}
+.attach-chip button{background:none; border:none; color:var(--danger); font-size:14px; padding:0; line-height:1;}
+.q-list-item{border:1px solid var(--border); border-radius:12px; padding:13px; margin-bottom:10px;}
+.q-list-item .qh{display:flex; justify-content:space-between; gap:8px; align-items:flex-start;}
+.q-preview-media{margin-top:8px;}
+.q-preview-media img{max-width:100%; border-radius:8px; border:1px solid var(--border);}
+
+/* ---------- exam ---------- */
+.timer-badge{font-family:var(--font-head); font-weight:700; font-size:14px; background:rgba(255,255,255,0.12); border-radius:20px; padding:6px 12px; display:flex; align-items:center; gap:6px;}
+.timer-badge.low{background:var(--danger); color:#fff;}
+.lanes{display:flex; gap:4px; margin-top:12px;}
+.lane{flex:1; height:5px; border-radius:3px; background:rgba(255,255,255,0.16);}
+.lane.done{background:var(--accent);}
+.opt{display:flex; align-items:flex-start; gap:12px; border:1px solid var(--border); border-radius:10px; padding:13px 14px; cursor:pointer; background:var(--bg); font-size:15px; color:var(--ink); margin-bottom:9px;}
+.opt:hover{border-color:var(--accent);}
+.opt .letter{flex:none; width:26px; height:26px; border-radius:7px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-family:var(--font-head); font-size:13px; font-weight:600; color:var(--muted);}
+.opt.selected{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, var(--bg));}
+.opt.selected .letter{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+.exam-userselect-off{user-select:none; -webkit-user-select:none;}
+.nav-row{position:fixed; left:0; right:0; bottom:0; padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px)) 18px; background:linear-gradient(to top, var(--bg) 65%, transparent); display:flex; gap:10px; max-width:760px; margin:0 auto;}
+.nav-row .btn-ghost{flex:none; width:84px;}
+.nav-row .btn-primary{flex:1;}
+
+/* ---------- results ---------- */
+.result-ring{width:140px; height:140px; margin:0 auto 16px auto; border-radius:50%; display:flex; align-items:center; justify-content:center; background:conic-gradient(var(--accent) calc(var(--pct)*1%), var(--border) 0);}
+.result-ring-inner{width:112px; height:112px; border-radius:50%; background:var(--card); display:flex; flex-direction:column; align-items:center; justify-content:center;}
+.result-score{font-family:var(--font-head); font-size:30px; font-weight:700;}
+.result-of{font-size:11.5px; color:var(--muted);}
+
+/* ---------- calendar ---------- */
+.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center;}
+.cal-dow{font-size:10.5px; color:var(--muted); font-weight:600; padding-bottom:4px;}
+.cal-day{aspect-ratio:1; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12.5px; border:1px solid transparent; position:relative;}
+.cal-day.pad{opacity:0;}
+.cal-day.today{border-color:var(--accent);}
+.cal-day .dot{width:5px; height:5px; border-radius:50%; background:var(--accent); margin-top:2px;}
+.cal-day.has-events{background:var(--card-2);}
+
+/* ---------- toast ---------- */
+#toast{position:fixed; left:50%; bottom:24px; transform:translate(-50%,120%); background:var(--ink); color:var(--bg); font-size:13.5px; padding:11px 18px; border-radius:24px; z-index:100; transition:transform 220ms ease; max-width:86vw; text-align:center;}
+#toast.show{transform:translate(-50%,0);}
+
+.dropzone{border:1.5px dashed var(--border); border-radius:12px; padding:18px; text-align:center; color:var(--muted); font-size:13px; cursor:pointer;}
+.dropzone:hover{border-color:var(--accent);}
+
+.evo-svg{width:100%; height:150px;}
+.legend-dot{width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px;}
+.grade-badge{display:inline-flex; align-items:center; justify-content:center; min-width:34px; padding:3px 6px; border-radius:7px; background:var(--card-2); border:1px solid var(--border); font-family:var(--font-head); font-weight:600; font-size:12.5px; margin:2px;}
+.grade-badge.low{color:var(--danger); border-color:var(--danger);}
+.grade-badge.high{color:var(--success); border-color:var(--success);}
+.lib-item{display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);}
+.lib-item:last-child{border-bottom:none;}
+.lib-icon{width:38px; height:38px; border-radius:10px; background:var(--card-2); display:flex; align-items:center; justify-content:center; font-size:18px; flex:none;}
+@media print{
+  header.top, .nav-row, #prof-tabbar, .btn, #pauta-turma-filter, .field label{display:none !important;}
+  body, .app{background:#fff !important; color:#000 !important;}
+  main{padding:0 !important;}
+  .screen{display:none !important;}
+  .screen.printing{display:block !important;}
+  table.simple th, table.simple td{border-color:#999 !important;}
+}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div class="app" id="app">
+
+  <!-- ===================== ROLE SELECTION ===================== -->
+  <main class="screen active" id="screen-role" style="padding-top:0;">
+    <div class="role-screen">
+      <div class="role-hero">
+        <svg class="brand-mark" viewBox="0 0 48 48" fill="none"><path d="M14 4C14 14 34 20 34 30C34 40 14 34 14 44" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><path d="M34 4C34 14 14 20 14 30C14 40 34 34 34 44" stroke="var(--accent-2)" stroke-width="3" stroke-linecap="round" opacity="0.7"/><line x1="15.5" y1="10" x2="32.5" y2="10" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/><line x1="14.5" y1="24.7" x2="33.5" y2="24.7" stroke="var(--accent-2)" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/><line x1="15.5" y1="38" x2="32.5" y2="38" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <h2>ADN</h2>
+        <p>Avaliação Digital e Notas — plataforma de testes, cadernetas e acompanhamento do progresso dos alunos.</p>
+      </div>
+      <button class="role-card" id="role-aluno">
+        <span class="ricon">🎓</span>
+        <span><b>Entrar numa avaliação</b><span>Inserir o código de uma avaliação e realizá-la.</span></span>
+      </button>
+    </div>
+  </main>
+
+  <!-- ===================== PROFESSOR: DEFINIR PASSWORD (1ª VEZ) ===================== -->
+  <!-- ===================== PROFESSOR: CÓDIGO DE LICENÇA (1ª VEZ, NÃO-ADMIN) ===================== -->
+  <main class="screen" id="screen-prof-license-entry" style="padding-top:0;">
+    <div class="role-screen">
+      <div class="role-hero">
+        <svg class="brand-mark" viewBox="0 0 48 48" fill="none"><path d="M14 4C14 14 34 20 34 30C34 40 14 34 14 44" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><path d="M34 4C34 14 14 20 14 30C14 40 34 34 34 44" stroke="var(--accent-2)" stroke-width="3" stroke-linecap="round" opacity="0.7"/></svg>
+        <h2>Acesso de Professor</h2>
+        <p>A ADN tem uma mensalidade de 5.000 Kz, paga via Multicaixa Express. Introduza o código de licença que recebeu após o pagamento.</p>
+      </div>
+      <div class="card stack">
+        <div class="field" style="margin-bottom:0;"><label>Código de licença</label><input type="text" id="license-entry-code" placeholder="Ex: ADN-20261230-A1B2C3" style="text-transform:uppercase; font-family:monospace;"></div>
+        <p class="small" style="color:var(--danger); min-height:16px;" id="license-entry-error"></p>
+        <button class="btn btn-primary btn-block" id="license-entry-submit">Validar código</button>
+        <button class="btn btn-ghost btn-block" id="license-entry-back">← Voltar</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================== PROFESSOR: LICENÇA EXPIRADA (RENOVAÇÃO) ===================== -->
+  <main class="screen" id="screen-prof-license-expired" style="padding-top:0;">
+    <div class="role-screen">
+      <div class="role-hero">
+        <svg class="brand-mark" viewBox="0 0 48 48" fill="none"><path d="M14 4C14 14 34 20 34 30C34 40 14 34 14 44" stroke="var(--danger)" stroke-width="3" stroke-linecap="round"/><path d="M34 4C34 14 14 20 14 30C14 40 34 34 34 44" stroke="var(--accent-2)" stroke-width="3" stroke-linecap="round" opacity="0.7"/></svg>
+        <h2>Licença expirada</h2>
+        <p>A sua mensalidade (5.000 Kz via Multicaixa Express) terminou. Introduza um novo código para continuar a usar a ADN — os seus dados (avaliações, caderneta, turmas) mantêm-se.</p>
+      </div>
+      <div class="card stack">
+        <div class="field" style="margin-bottom:0;"><label>Novo código de licença</label><input type="text" id="license-renew-code" placeholder="Ex: ADN-20261230-A1B2C3" style="text-transform:uppercase; font-family:monospace;"></div>
+        <p class="small" style="color:var(--danger); min-height:16px;" id="license-renew-error"></p>
+        <button class="btn btn-primary btn-block" id="license-renew-submit">Validar e continuar</button>
+        <button class="btn btn-ghost btn-block" id="license-renew-logout">← Sair</button>
+      </div>
+    </div>
+  </main>
+
+  <main class="screen" id="screen-prof-setpw" style="padding-top:0;">
+    <div class="role-screen">
+      <div class="role-hero">
+        <svg class="brand-mark" viewBox="0 0 48 48" fill="none"><path d="M14 4C14 14 34 20 34 30C34 40 14 34 14 44" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><path d="M34 4C34 14 14 20 14 30C14 40 34 34 34 44" stroke="var(--accent-2)" stroke-width="3" stroke-linecap="round" opacity="0.7"/></svg>
+        <h2>Área do Professor</h2>
+        <p>Defina uma password para proteger este espaço neste dispositivo.</p>
+      </div>
+      <div class="card stack">
+        <div class="field" style="margin-bottom:0;"><label>O seu nome (opcional)</label><input type="text" id="setpw-name" placeholder="Ex: Adriano Tomás"></div>
+        <div class="field" style="margin-bottom:0;"><label>Criar password</label><input type="password" id="setpw-password" placeholder="Mínimo 4 caracteres"></div>
+        <div class="field" style="margin-bottom:0;"><label>Confirmar password</label><input type="password" id="setpw-password2" placeholder="Repita a password"></div>
+        <p class="small muted">⚠ Esta password fica guardada apenas neste dispositivo/navegador, para impedir acessos casuais — não é uma conta online nem encriptação forte.</p>
+        <button class="btn btn-primary btn-block" id="setpw-save-btn">Guardar e entrar</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================== PROFESSOR: INTRODUZIR PASSWORD ===================== -->
+  <main class="screen" id="screen-prof-login" style="padding-top:0;">
+    <div class="role-screen">
+      <div class="role-hero">
+        <svg class="brand-mark" viewBox="0 0 48 48" fill="none"><path d="M14 4C14 14 34 20 34 30C34 40 14 34 14 44" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><path d="M34 4C34 14 14 20 14 30C14 40 34 34 34 44" stroke="var(--accent-2)" stroke-width="3" stroke-linecap="round" opacity="0.7"/></svg>
+        <h2 id="prof-login-title">Área do Professor</h2>
+        <p>Introduza a sua password para continuar.</p>
+      </div>
+      <div class="card stack">
+        <div class="field" style="margin-bottom:0;"><label>Password</label><input type="password" id="prof-login-password" placeholder="••••••"></div>
+        <p class="small" style="color:var(--danger); min-height:16px;" id="prof-login-error"></p>
+        <button class="btn btn-primary btn-block" id="prof-login-btn">Entrar</button>
+        <button class="btn btn-ghost btn-block" id="prof-forgot-btn">Esqueci a password</button>
+        <button class="btn btn-ghost btn-block" id="prof-login-back-btn">← Voltar</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================== PROFESSOR HEADER + TABS ===================== -->
+  <header class="top" id="prof-header" style="display:none;">
+    <div class="brand-row">
+      <div class="brand">
+        <button id="prof-header-avatar-btn" title="Editar perfil" style="width:34px;height:34px;border-radius:9px;border:none;padding:0;flex:none;overflow:hidden;background:transparent;cursor:pointer;">
+          <svg class="brand-mark" id="prof-header-logo-svg" viewBox="0 0 48 48" fill="none"><path d="M14 4C14 14 34 20 34 30C34 40 14 34 14 44" stroke="var(--accent)" stroke-width="3.4" stroke-linecap="round"/><path d="M34 4C34 14 14 20 14 30C14 40 34 34 34 44" stroke="var(--accent-2)" stroke-width="3.4" stroke-linecap="round" opacity="0.75"/><line x1="15.5" y1="10" x2="32.5" y2="10" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/><line x1="14.5" y1="24.7" x2="33.5" y2="24.7" stroke="var(--accent-2)" stroke-width="2.6" stroke-linecap="round" opacity="0.8"/><line x1="15.5" y1="38" x2="32.5" y2="38" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/></svg>
+          <img id="prof-header-logo-img" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:9px;">
+        </button>
+        <div class="brand-text"><h1>ADN</h1><div class="sub" id="prof-header-sub">Área do Professor</div></div>
+      </div>
+      <div class="row" style="gap:8px;">
+        <button class="profile-btn" id="download-app-prof" title="Descarregar a aplicação">⬇</button>
+        <button class="profile-btn" id="switch-role-prof">Mudar perfil ⇄</button>
+      </div>
+    </div>
+    <div class="tabbar" id="prof-tabbar">
+      <button class="tab active" data-tab="inicio">Início</button>
+      <button class="tab" data-tab="avaliacoes">Avaliações</button>
+      <button class="tab" data-tab="conteudos">Conteúdos</button>
+      <button class="tab" data-tab="turmas">Turmas</button>
+      <button class="tab" data-tab="caderneta">Caderneta</button>
+      <button class="tab" data-tab="pauta">Pauta</button>
+      <button class="tab" data-tab="assiduidade">Assiduidade</button>
+      <button class="tab" data-tab="mensagens">Mensagens</button>
+      <button class="tab" data-tab="grelha">Grelha</button>
+      <button class="tab" data-tab="calendario">Calendário</button>
+      <button class="tab" data-tab="evolucao">Evolução</button>
+    </div>
+  </header>
+
+  <!-- ===================== STUDENT HEADER ===================== -->
+  <header class="top" id="aluno-header" style="display:none;">
+    <div class="brand-row">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 48 48" fill="none"><path d="M14 4C14 14 34 20 34 30C34 40 14 34 14 44" stroke="var(--accent)" stroke-width="3.4" stroke-linecap="round"/><path d="M34 4C34 14 14 20 14 30C14 40 34 34 34 44" stroke="var(--accent-2)" stroke-width="3.4" stroke-linecap="round" opacity="0.75"/><line x1="15.5" y1="10" x2="32.5" y2="10" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/><line x1="14.5" y1="24.7" x2="33.5" y2="24.7" stroke="var(--accent-2)" stroke-width="2.6" stroke-linecap="round" opacity="0.8"/><line x1="15.5" y1="38" x2="32.5" y2="38" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/></svg>
+        <div class="brand-text"><h1>ADN</h1><div class="sub" id="aluno-header-sub">Área do Aluno</div></div>
+      </div>
+    </div>
+    <div class="timer-wrap" id="timer-wrap" style="display:none; margin-top:12px;">
+      <div class="row" style="align-items:center; justify-content:space-between;">
+        <span class="timer-badge" id="timer-badge">⏱ 00:00</span>
+        <span class="small" style="color:rgba(243,246,245,0.7);" id="q-progress-label"></span>
+      </div>
+      <div class="lanes" id="lanes"></div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===================== PROFESSOR: INÍCIO ===================== -->
+    <section class="screen" id="screen-prof-inicio">
+      <div class="stat-grid" id="prof-stats"></div>
+      <div class="section-title">Avaliações recentes</div>
+      <div class="card" id="prof-recent-tests"></div>
+      <div class="section-title">Importar resultado de um aluno</div>
+      <div class="card">
+        <p class="small muted">Cole aqui o código de resultado que o aluno lhe enviou (WhatsApp, e-mail, etc.), ou carregue o ficheiro que ele descarregou.</p>
+        <div class="field"><textarea id="import-result-code" placeholder="Cole o código de resultado aqui..."></textarea></div>
+        <div class="row wrap">
+          <button class="btn btn-primary grow" id="import-result-btn">Importar resultado</button>
+          <label class="btn btn-ghost" style="position:relative;">📁 Carregar ficheiro<input type="file" id="import-result-file" accept=".json,.adnres" style="position:absolute; inset:0; opacity:0; cursor:pointer;"></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PROFESSOR: AVALIAÇÕES (lista) ===================== -->
+    <section class="screen" id="screen-prof-avaliacoes">
+      <button class="btn btn-primary btn-block" id="new-test-btn">＋ Criar nova avaliação</button>
+      <div class="section-title">As suas avaliações</div>
+      <div class="row wrap" id="category-filters" style="margin-bottom:10px;"></div>
+      <div id="tests-list"></div>
+    </section>
+
+    <!-- ===================== PROFESSOR: BIBLIOTECA DE CONTEÚDOS ===================== -->
+    <section class="screen" id="screen-conteudos">
+      <label class="dropzone" style="display:block;">
+        📎 Toque para carregar conteúdos — Word, PDF, PowerPoint, Excel, imagens ou outros
+        <input type="file" id="lib-upload-input" multiple accept=".docx,.doc,.pdf,.pptx,.ppt,.xlsx,.xls,.txt,image/*" style="display:none;">
+      </label>
+      <p class="small muted" style="margin-top:8px;">Os ficheiros ficam guardados neste dispositivo (até ±4&nbsp;MB cada). Pode pré-visualizar imagens e extrair texto de .docx/.pdf.</p>
+      <div class="section-title">Materiais carregados <span class="pill accent" id="lib-count-pill">0</span></div>
+      <div id="lib-list"></div>
+    </section>
+
+    <!-- ===================== PROFESSOR: VER CONTEÚDO ===================== -->
+    <section class="screen" id="screen-conteudo-view">
+      <button class="btn btn-ghost btn-sm" id="back-to-conteudos">← Voltar</button>
+      <div class="card" style="margin-top:12px;">
+        <h3 id="lib-view-title" style="margin-bottom:4px;"></h3>
+        <p class="small muted" id="lib-view-meta" style="margin:0 0 14px 0;"></p>
+        <div id="lib-view-body"></div>
+      </div>
+      <button class="btn btn-ghost btn-block" id="lib-view-download" style="margin-top:12px;">⬇ Descarregar ficheiro original</button>
+      <button class="btn btn-danger btn-block" id="lib-view-delete" style="margin-top:8px;">Eliminar material</button>
+    </section>
+
+    <!-- ===================== PROFESSOR: TURMAS ===================== -->
+    <section class="screen" id="screen-turmas">
+      <button class="btn btn-primary btn-block" id="new-turma-btn">＋ Nova turma</button>
+      <div class="section-title">Turmas</div>
+      <div id="turmas-list"></div>
+    </section>
+
+    <!-- ===================== PROFESSOR: DETALHE DA TURMA ===================== -->
+    <section class="screen" id="screen-turma-detail">
+      <button class="btn btn-ghost btn-sm" id="back-to-turmas">← Voltar</button>
+      <div class="card" style="margin-top:12px;">
+        <div class="field" style="margin-bottom:0;"><label>Nome da turma</label><input type="text" id="turma-name" placeholder="Ex: 10ª Classe — Turma A"></div>
+      </div>
+      <div class="section-title">Adicionar alunos</div>
+      <div class="card">
+        <div class="field"><label>Um aluno de cada vez</label>
+          <div class="row"><input type="text" id="turma-add-name" placeholder="Nome completo" class="grow"><input type="text" id="turma-add-id" placeholder="Nº identificação" style="width:130px;"></div>
+        </div>
+        <button class="btn btn-ghost btn-block" id="turma-add-one-btn">＋ Adicionar aluno</button>
+        <div class="divider"></div>
+        <div class="field"><label>Ou cole uma lista (uma linha por aluno: "Nome, Número")</label><textarea id="turma-bulk" placeholder="Ana Silva, 12345LA001&#10;Bruno Costa, 12345LA002"></textarea></div>
+        <button class="btn btn-ghost btn-block" id="turma-add-bulk-btn">＋ Adicionar lista</button>
+      </div>
+      <div class="section-title">Alunos <span class="pill accent" id="turma-count-pill">0</span></div>
+      <div class="card" id="turma-students-list"></div>
+      <button class="btn btn-danger btn-block" id="delete-turma-btn" style="margin-top:14px;">Eliminar turma</button>
+    </section>
+
+    <!-- ===================== PROFESSOR: CRIAR/EDITAR AVALIAÇÃO ===================== -->
+    <section class="screen" id="screen-test-editor">
+      <button class="btn btn-ghost btn-sm" id="back-to-tests">← Voltar</button>
+      <div class="card" style="margin-top:12px;">
+        <div class="field"><label>Título da avaliação</label><input type="text" id="test-title" placeholder="Ex: 1ª Avaliação — Metodologia do Ensino"></div>
+        <div class="row">
+          <div class="field grow"><label>Disciplina / Tema</label><input type="text" id="test-subject" placeholder="Ex: Educação Física"></div>
+          <div class="field" style="width:110px;"><label>Tempo (min)</label><input type="number" id="test-timer" min="1" value="20"></div>
+        </div>
+        <div class="row">
+          <div class="field grow"><label>Categoria</label>
+            <select id="test-category">
+              <option value="">Sem categoria</option>
+              <option value="Metodologia de Ensino">Metodologia de Ensino</option>
+              <option value="Epistemologia">Epistemologia</option>
+              <option value="Reabilitação Física">Reabilitação Física</option>
+              <option value="Avaliação e Medição">Avaliação e Medição</option>
+              <option value="Anatomia e Fisiologia">Anatomia e Fisiologia</option>
+              <option value="Desportos Coletivos">Desportos Coletivos</option>
+              <option value="Desportos Individuais">Desportos Individuais</option>
+              <option value="__custom__">Outra (escrever)…</option>
+            </select>
+          </div>
+          <div class="field grow" id="test-category-custom-wrap" style="display:none;"><label>Nome da categoria</label><input type="text" id="test-category-custom" placeholder="Escreva a categoria"></div>
+        </div>
+        <div class="field"><label>Turma (opcional)</label>
+          <select id="test-turma"><option value="">Nenhuma — aberta a qualquer aluno</option></select>
+          <div class="hint">Ligar a uma turma ajuda a ver, na Caderneta, quem ainda não respondeu.</div>
+        </div>
+        <div class="field"><label class="row" style="align-items:center; gap:8px;"><input type="checkbox" id="test-shuffle" checked style="width:16px;height:16px;"> <span>Ordem das perguntas e opções diferente para cada aluno</span></label></div>
+        <div class="field" style="margin-bottom:0;"><label>💬 Mensagem para os alunos (opcional)</label><textarea id="test-message" placeholder="Ex: Boa sorte! Leiam com atenção antes de responder." style="min-height:60px;"></textarea>
+          <div class="hint">Aparece aos alunos assim que abrem esta avaliação.</div>
+        </div>
+      </div>
+
+      <div class="section-title">Importar conteúdo de referência</div>
+      <div class="card">
+        <p class="small muted">Carregue um documento Word (.docx) ou PDF para extrair texto e criar perguntas mais depressa. Ficheiros PowerPoint e outros ficam anexados como referência.</p>
+        <label class="dropzone" style="display:block; margin-top:8px;">
+          📄 Toque para carregar .docx, .pdf, .pptx ou outro ficheiro
+          <input type="file" id="content-upload" accept=".docx,.pdf,.pptx,.ppt,.doc,.xlsx,.txt" style="display:none;">
+        </label>
+        <div id="content-extract-status" class="small muted" style="margin-top:8px;"></div>
+        <div id="extracted-paragraphs" style="margin-top:10px;"></div>
+        <div class="attach-row" id="test-attachments"></div>
+      </div>
+
+      <div class="section-title">✨ Criar perguntas com ajuda de IA (Claude)</div>
+      <div class="card">
+        <p class="small muted">Por segurança, esta app publicada não se liga diretamente a nenhuma IA. Mas pode gerar as perguntas com o Claude (ou outra IA) e colá-las aqui num só passo:</p>
+        <ol class="small muted" style="margin:8px 0 12px 18px; padding:0;">
+          <li>Copie o prompt abaixo (já ajustado ao título/tema desta avaliação)</li>
+          <li>Cole-o numa conversa com o Claude e peça para gerar as perguntas</li>
+          <li>Cole aqui o resultado e toque em "Importar perguntas"</li>
+        </ol>
+        <button class="btn btn-ghost btn-block" id="copy-ai-prompt-btn">📋 Copiar prompt sugerido</button>
+        <div class="divider"></div>
+        <div class="field"><label>Colar perguntas geradas pela IA</label><textarea id="ai-paste-area" placeholder="Cole aqui o texto no formato MC | ... ou VF | ..." style="min-height:110px; font-family:monospace; font-size:12.5px;"></textarea></div>
+        <button class="btn btn-primary btn-block" id="import-ai-questions-btn">＋ Importar perguntas</button>
+        <div id="ai-import-status" class="small muted" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="section-title">Perguntas <span class="pill accent" id="q-count-pill">0</span> <span class="pill" id="q-total-points-pill">0 / 20 valores</span></div>
+      <div id="questions-list"></div>
+      <button class="btn btn-ghost btn-block" id="add-question-btn" style="margin-top:6px;">＋ Adicionar pergunta</button>
+
+      <div class="section-title">Publicar</div>
+      <div class="card">
+        <button class="btn btn-primary btn-block" id="save-test-btn">Guardar e gerar código</button>
+        <div id="publish-result" style="margin-top:14px; display:none;">
+          <p class="small muted">Partilhe este código com os alunos (WhatsApp, quadro, e-mail). Eles inserem-no na área "Sou Aluno".</p>
+          <div class="row" style="align-items:center; gap:10px; margin:8px 0;">
+            <span class="code-chip" id="published-code" style="font-size:20px; padding:8px 16px;"></span>
+            <button class="btn btn-ghost btn-sm" id="copy-code-btn">Copiar</button>
+          </div>
+          <button class="btn btn-ghost btn-block" id="download-test-btn">⬇ Descarregar ficheiro da avaliação</button>
+          <div class="divider"></div>
+          <p class="small muted">Link direto para os alunos (abre já na área do Aluno, sem escolher perfil):</p>
+          <div class="row" style="align-items:center; gap:8px;">
+            <input type="text" id="student-link-display" readonly style="flex:1; font-size:12px; padding:9px 10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--muted);">
+            <button class="btn btn-ghost btn-sm" id="copy-student-link-btn">Copiar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PROFESSOR: EDITAR PERFIL ===================== -->
+    <section class="screen" id="screen-prof-profile">
+      <button class="btn btn-ghost btn-sm" id="back-from-profile">← Voltar</button>
+      <div class="card" style="margin-top:12px; text-align:center;">
+        <div id="profile-avatar-preview" style="width:88px; height:88px; border-radius:50%; margin:0 auto 12px auto; overflow:hidden; background:var(--card-2); display:flex; align-items:center; justify-content:center; font-size:34px; border:1px solid var(--border);">🧬</div>
+        <label class="btn btn-ghost btn-sm" style="position:relative; display:inline-flex;">🖼 Carregar foto<input type="file" id="profile-photo-input" accept="image/*" style="position:absolute; inset:0; opacity:0; cursor:pointer;"></label>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <div class="field"><label>Nome</label><input type="text" id="profile-name-input" placeholder="O seu nome"></div>
+        <div class="divider"></div>
+        <p class="small muted" style="margin-bottom:8px;">Alterar password de acesso</p>
+        <div class="field"><label>Nova password</label><input type="password" id="profile-newpw-input" placeholder="Deixe em branco para manter a atual"></div>
+        <button class="btn btn-primary btn-block" id="profile-save-btn">Guardar alterações</button>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <p class="small muted" style="margin-bottom:8px;">🔒 O seu link privado de administrador (os alunos nunca veem esta opção — guarde este link só para si):</p>
+        <div class="row" style="align-items:center; gap:8px;">
+          <input type="text" id="profile-prof-link" readonly style="flex:1; font-size:12px; padding:9px 10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--muted);">
+          <button class="btn btn-ghost btn-sm" id="copy-prof-link-btn">Copiar</button>
+        </div>
+      </div>
+
+      <div class="card" id="admin-license-card" style="margin-top:12px; display:none;">
+        <p class="small muted" style="margin-bottom:2px;">💳 Gerar licença mensal (5.000 Kz via Multicaixa Express)</p>
+        <p class="hint" style="margin-bottom:10px;">Confirme o pagamento fora da app e só depois gere o código para o professor.</p>
+        <div class="row">
+          <div class="field grow" style="margin-bottom:10px;"><label>Nome do professor (seu registo)</label><input type="text" id="license-gen-name" placeholder="Ex: Maria Capalo"></div>
+          <div class="field" style="width:90px; margin-bottom:10px;"><label>Meses</label><input type="number" id="license-gen-months" value="1" min="1" max="12"></div>
+        </div>
+        <button class="btn btn-primary btn-block" id="license-gen-btn">Gerar código</button>
+        <div id="license-gen-result" style="display:none; margin-top:12px;">
+          <div class="row" style="align-items:center; gap:8px;">
+            <span class="code-chip" id="license-gen-code" style="font-size:15px; flex:1; text-align:center;"></span>
+            <button class="btn btn-ghost btn-sm" id="license-gen-copy">Copiar</button>
+          </div>
+          <button class="btn btn-ghost btn-block" id="license-gen-whatsapp" style="margin-top:8px;">📲 Enviar por WhatsApp</button>
+        </div>
+        <div class="divider"></div>
+        <p class="small muted" style="margin-bottom:8px;">Licenças emitidas (registo local, só neste dispositivo)</p>
+        <div id="license-history-list"></div>
+      </div>
+    </section>
+
+    <!-- ===================== QUESTION EDITOR MODAL-LIKE SCREEN ===================== -->
+    <section class="screen" id="screen-question-editor">
+      <button class="btn btn-ghost btn-sm" id="back-to-test-editor">← Voltar às perguntas</button>
+      <div class="card" style="margin-top:12px;">
+        <div class="qtype-toggle">
+          <button data-type="mc" id="qtype-mc" class="active">Escolha múltipla</button>
+          <button data-type="vf" id="qtype-vf">Verdadeiro / Falso</button>
+        </div>
+        <div class="field"><label>Enunciado da pergunta</label><textarea id="q-text" placeholder="Escreva a pergunta..."></textarea></div>
+
+        <div id="mc-options-wrap">
+          <label class="small muted" style="display:block; margin-bottom:6px;">Opções (selecione a correta)</label>
+          <div id="mc-options"></div>
+          <button class="btn btn-ghost btn-sm" id="add-option-btn">＋ Opção</button>
+        </div>
+        <div id="vf-wrap" style="display:none;">
+          <label class="small muted" style="display:block; margin-bottom:6px;">Resposta correta</label>
+          <div class="vf-row">
+            <label><input type="radio" name="vf-correct" value="true" checked> Verdadeiro</label>
+            <label><input type="radio" name="vf-correct" value="false"> Falso</label>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:14px;"><label>Pontuação</label><input type="number" id="q-points" min="0.5" step="0.5" value="2"></div>
+
+        <div class="divider"></div>
+        <label class="small muted" style="display:block; margin-bottom:8px;">Conteúdo visual (opcional)</label>
+        <div class="row wrap">
+          <label class="btn btn-ghost btn-sm" style="position:relative;">🖼 Imagem<input type="file" id="q-image-input" accept="image/*" style="position:absolute; inset:0; opacity:0;"></label>
+          <button class="btn btn-ghost btn-sm" id="q-add-table-btn">▦ Tabela</button>
+          <button class="btn btn-ghost btn-sm" id="q-add-chart-btn">📊 Gráfico</button>
+        </div>
+        <div id="q-media-preview" class="q-preview-media"></div>
+
+        <div class="divider"></div>
+        <button class="btn btn-primary btn-block" id="save-question-btn">Guardar pergunta</button>
+        <button class="btn btn-ghost btn-block" id="delete-question-btn" style="margin-top:8px; display:none; color:var(--danger); border-color:var(--danger);">Eliminar pergunta</button>
+      </div>
+    </section>
+
+    <!-- ===================== PROFESSOR: CADERNETA ===================== -->
+    <section class="screen" id="screen-caderneta">
+      <div class="card" id="caderneta-week-nav"></div>
+      <div class="field" style="margin-top:12px;"><label>Filtrar por turma</label><select id="caderneta-turma-filter"><option value="">Todos os alunos</option></select></div>
+      <div class="section-title">Caderneta semanal <span class="pill small">máx. 2 avaliações/semana por aluno</span></div>
+      <div id="caderneta-table"></div>
+      <div id="caderneta-missing"></div>
+      <div class="section-title">Exportar</div>
+      <div class="row wrap">
+        <button class="btn btn-ghost grow" id="export-caderneta-btn">⬇ CSV</button>
+        <button class="btn btn-ghost grow" id="pdf-caderneta-btn">🖨 PDF</button>
+      </div>
+    </section>
+
+    <!-- ===================== PROFESSOR: PAUTA ===================== -->
+    <section class="screen" id="screen-pauta">
+      <div class="row wrap" style="margin-bottom:12px;">
+        <button class="pill accent" id="pauta-mode-geral" style="cursor:pointer;">Pauta geral</button>
+        <button class="pill" id="pauta-mode-mensal" style="cursor:pointer;">Pauta mensal</button>
+      </div>
+      <div class="card" id="pauta-month-nav" style="display:none; margin-bottom:12px;"></div>
+      <div class="field" style="margin-bottom:14px;"><label>Filtrar por turma</label><select id="pauta-turma-filter"><option value="">Todos os alunos</option></select></div>
+      <div class="section-title" id="pauta-title">Pauta geral <span class="pill small">notas de 0 a 20 valores</span></div>
+      <p class="small muted" style="margin-top:-6px;">Nota final = (soma das notas ÷ nº de avaliações) − penalizações por faltas/atrasos.</p>
+      <div id="pauta-table"></div>
+      <div class="row wrap" style="margin-top:14px;">
+        <button class="btn btn-ghost grow" id="export-pauta-btn">⬇ CSV</button>
+        <button class="btn btn-ghost grow" id="print-pauta-btn">🖨 PDF</button>
+      </div>
+    </section>
+
+    <!-- ===================== PROFESSOR: ASSIDUIDADE (FALTAS E ATRASOS) ===================== -->
+    <section class="screen" id="screen-assiduidade">
+      <div class="card">
+        <div class="row">
+          <div class="field grow" style="margin-bottom:0;"><label>Penalização por falta (valores)</label><input type="number" id="pen-falta-input" min="0" step="0.5"></div>
+          <div class="field grow" style="margin-bottom:0;"><label>Penalização por atraso (valores)</label><input type="number" id="pen-atraso-input" min="0" step="0.5"></div>
+        </div>
+        <div class="hint">Estes valores são subtraídos à média final de cada aluno na Pauta.</div>
+      </div>
+      <div class="field" style="margin:14px 0;"><label>Turma</label><select id="assid-turma-select"><option value="">— Selecione uma turma —</option></select></div>
+      <div id="assid-table"></div>
+    </section>
+
+    <!-- ===================== PROFESSOR: MENSAGENS ===================== -->
+    <section class="screen" id="screen-mensagens">
+      <p class="small muted">Mensagens que os alunos deixaram ao enviar os resultados (assíncronas — não é um chat em tempo real).</p>
+      <div id="mensagens-list" style="margin-top:12px;"></div>
+    </section>
+
+    <!-- ===================== PROFESSOR: GRELHA DE OBSERVAÇÃO ===================== -->
+    <section class="screen" id="screen-grelha">
+      <div class="field" style="margin-bottom:14px;"><label>Turma</label><select id="grelha-turma-select"><option value="">— Selecione uma turma —</option></select></div>
+      <div id="grelha-students-list"></div>
+    </section>
+
+    <!-- ===================== PROFESSOR: GRELHA — AVALIAR ALUNO ===================== -->
+    <section class="screen" id="screen-grelha-detail">
+      <button class="btn btn-ghost btn-sm" id="back-to-grelha">← Voltar</button>
+      <div class="card" style="margin-top:12px;">
+        <h3 id="grelha-student-name" style="margin-bottom:2px;"></h3>
+        <p class="small muted" id="grelha-student-meta" style="margin:0 0 6px 0;"></p>
+        <div class="field" style="margin-bottom:10px;"><label>Título do jogo avaliado (opcional)</label><input type="text" id="grelha-jogo-titulo" placeholder="Ex: A caça ao tesouro"></div>
+      </div>
+      <div id="grelha-criteria-list"></div>
+      <div class="card" style="margin-top:12px; text-align:center;">
+        <div class="small muted">Total da grelha</div>
+        <div class="stat-num" id="grelha-total-display" style="font-size:30px;">0 / 20</div>
+      </div>
+      <button class="btn btn-primary btn-block" id="grelha-save-btn" style="margin-top:12px;">Guardar avaliação</button>
+    </section>
+
+    <!-- ===================== PROFESSOR: CALENDÁRIO ===================== -->
+    <section class="screen" id="screen-calendario">
+      <div class="card">
+        <div class="cal-head">
+          <button class="icon-btn" id="cal-prev">‹</button>
+          <h3 id="cal-month-label"></h3>
+          <button class="icon-btn" id="cal-next">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="section-title">Nesse dia</div>
+      <div class="card" id="cal-day-detail"><p class="muted small">Toque num dia com marcação para ver os detalhes.</p></div>
+    </section>
+
+    <!-- ===================== PROFESSOR: EVOLUÇÃO ===================== -->
+    <section class="screen" id="screen-evolucao">
+      <div class="card">
+        <div class="field" style="margin-bottom:0;"><label>Selecionar aluno</label><select id="evo-student-select"></select></div>
+      </div>
+      <div class="card" id="evo-chart-card" style="margin-top:12px;"></div>
+      <div class="section-title">Histórico</div>
+      <div class="card" id="evo-history-list"></div>
+    </section>
+
+    <!-- ===================== ALUNO: ENTRAR ===================== -->
+    <section class="screen" id="screen-aluno-entrar">
+      <div class="card stack">
+        <h3>Entrar numa avaliação</h3>
+        <div class="field" style="margin-bottom:0;"><label>Código da avaliação</label><input type="text" id="aluno-code-input" placeholder="Ex: A3F9K2" style="text-transform:uppercase; letter-spacing:0.08em; font-family:var(--font-head); font-weight:700;"></div>
+        <button class="btn btn-primary btn-block" id="aluno-code-submit">Continuar</button>
+        <div class="row" style="align-items:center; gap:10px;"><hr class="divider" style="flex:1; margin:4px 0;"><span class="small muted">ou</span><hr class="divider" style="flex:1; margin:4px 0;"></div>
+        <label class="dropzone" style="display:block;">📁 Carregar ficheiro da avaliação (.adn)<input type="file" id="aluno-file-input" accept=".json,.adn" style="display:none;"></label>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="back-to-prof-link" style="display:none; margin:14px auto 0 auto;">🔒 Área do Professor</button>
+    </section>
+
+    <!-- ===================== ALUNO: IDENTIFICAÇÃO ===================== -->
+    <section class="screen" id="screen-aluno-id">
+      <div class="card stack">
+        <h3 id="aluno-id-test-title"></h3>
+        <p class="muted small" id="aluno-id-test-meta"></p>
+        <div id="aluno-id-message" style="display:none; background:var(--card-2); border-radius:10px; padding:12px 14px; font-size:13.5px;"></div>
+        <div class="field" style="margin-bottom:0;"><label>Nome completo *</label><input type="text" id="aluno-name" placeholder="Escreva o seu nome completo"></div>
+        <div class="field" style="margin-bottom:0;"><label>Número de identificação (BI / nº de estudante) *</label><input type="text" id="aluno-idnum" placeholder="Ex: 12345LA034"></div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Foto do aluno (opcional — PNG, JPG, etc.)</label>
+          <div class="row" style="align-items:center; gap:10px;">
+            <div id="aluno-photo-preview" style="width:52px; height:52px; border-radius:10px; background:var(--card-2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; flex:none;">🙂</div>
+            <label class="btn btn-ghost btn-sm" style="position:relative;">Carregar foto<input type="file" id="aluno-photo-input" accept="image/*" style="position:absolute; inset:0; opacity:0;"></label>
+          </div>
+        </div>
+        <div class="card" style="background:var(--danger-bg); border:none;">
+          <p class="small" style="color:var(--danger); margin:0;">⚠ Esta avaliação regista automaticamente tentativas de cópia, clique com o botão direito e mudanças de página. Estes eventos ficam associados ao seu resultado.</p>
+        </div>
+        <button class="btn btn-primary btn-block" id="aluno-start-exam-btn">Iniciar avaliação</button>
+      </div>
+    </section>
+
+    <!-- ===================== ALUNO: EXAME ===================== -->
+    <section class="screen" id="screen-exam">
+      <div class="card">
+        <p class="small muted" id="exam-q-points"></p>
+        <p class="q-text exam-userselect-off" id="exam-q-text" style="font-size:18px; font-weight:600; margin:8px 0 14px 0;"></p>
+        <div class="q-preview-media exam-userselect-off" id="exam-q-media"></div>
+        <div id="exam-q-options"></div>
+      </div>
+    </section>
+
+    <!-- ===================== ALUNO: RESULTADOS ===================== -->
+    <section class="screen" id="screen-aluno-resultado">
+      <div class="result-hero" style="text-align:center;">
+        <div class="result-ring" id="ar-ring" style="--pct:0;"><div class="result-ring-inner"><span class="result-score" id="ar-score">0/0</span><span class="result-of">pontos</span></div></div>
+        <p class="muted small" id="ar-msg"></p>
+      </div>
+      <div class="section-title">Revisão</div>
+      <div id="ar-review"></div>
+      <div class="section-title">Enviar resultado ao professor</div>
+      <div class="card">
+        <div class="field"><label>💬 Deixar uma mensagem ao professor (opcional)</label><textarea id="ar-message" placeholder="Ex: Tive dúvidas na pergunta 4..." style="min-height:60px;"></textarea></div>
+        <p class="small muted">Envie diretamente, ou copie o código / descarregue o ficheiro.</p>
+        <div class="row wrap" style="margin-bottom:10px;">
+          <button class="btn btn-primary grow" id="ar-whatsapp-btn">📲 WhatsApp</button>
+          <button class="btn btn-ghost grow" id="ar-email-btn">✉️ E-mail</button>
+        </div>
+        <textarea id="ar-code" readonly style="min-height:70px; font-size:11px; font-family:monospace;"></textarea>
+        <div class="row wrap" style="margin-top:10px;">
+          <button class="btn btn-ghost grow" id="ar-copy-btn">Copiar código</button>
+          <button class="btn btn-ghost grow" id="ar-download-btn">⬇ Ficheiro</button>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-block" id="ar-pdf-btn" style="margin-top:12px;">🖨 Descarregar resultado em PDF</button>
+      <button class="btn btn-ghost btn-block" id="ar-new-exam-btn" style="margin-top:8px;">Fazer outra avaliação</button>
+    </section>
+
+  </main>
+
+  <div class="nav-row" id="exam-nav" style="display:none;">
+    <button class="btn btn-ghost" id="exam-prev-btn">Voltar</button>
+    <button class="btn btn-primary" id="exam-next-btn" disabled>Seguinte</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================================
+   ADN — Avaliação Digital e Notas
+   Vanilla JS single-file app. Data persists locally (per device) via
+   localStorage. Cross-device sync between professor and student happens
+   through: (a) a short test CODE / exported .adn file the professor shares,
+   and (b) a result CODE / .adnres file the student sends back.
+   ========================================================================= */
+
+var STORE_KEYS = { role:"adn_role", tests:"adn_tests", cad:"adn_caderneta", turmas:"adn_turmas", contents:"adn_contents", profProfile:"adn_prof_profile", attendance:"adn_attendance", settings:"adn_settings", grelhas:"adn_grelhas", licenses:"adn_licenses_issued", seeded:"adn_seeded_v1" };
+
+function safeGet(key, fallback){
+  try{ var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; }
+}
+function safeSet(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); return true; }catch(e){ return false; }
+}
+function uid(prefix){ return (prefix||"id") + "_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+function genCode(){
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var out = "";
+  for(var i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+function escapeHtml(str){ var d = document.createElement("div"); d.textContent = str==null?"":String(str); return d.innerHTML; }
+function toast(msg){
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function(){ t.classList.remove("show"); }, 2600);
+}
+function fmtDate(ts){
+  var d = new Date(ts);
+  return d.toLocaleDateString("pt-PT", {day:"2-digit", month:"short", year:"numeric"});
+}
+function fmtDateTime(ts){
+  var d = new Date(ts);
+  var weekday = d.toLocaleDateString("pt-PT", {weekday:"long"});
+  weekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+  return weekday + ", " + d.toLocaleDateString("pt-PT", {day:"2-digit", month:"short"}) + " às " + d.toLocaleTimeString("pt-PT", {hour:"2-digit", minute:"2-digit"});
+}
+function isoWeekKey(ts){
+  var d = new Date(ts);
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 3 - ((d.getDay()+6)%7));
+  var week1 = new Date(d.getFullYear(),0,4);
+  var weekNo = 1 + Math.round(((d - week1) / 86400000 - 3 + ((week1.getDay()+6)%7))/7);
+  return d.getFullYear() + "-S" + String(weekNo).padStart(2,"0");
+}
+
+/* ---------- seeded PRNG + shuffle (deterministic per-student) ---------- */
+function hashStr(str){
+  var h = 1779033703 ^ str.length;
+  for (var i=0;i<str.length;i++){
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function(){
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return h >>> 0;
+  };
+}
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function seededShuffle(arr, seedStr){
+  var gen = hashStr(seedStr);
+  var rand = mulberry32(gen());
+  var a = arr.slice();
+  for (var i=a.length-1;i>0;i--){
+    var j = Math.floor(rand()*(i+1));
+    var tmp=a[i]; a[i]=a[j]; a[j]=tmp;
+  }
+  return a;
+}
+
+/* =========================================================================
+   LICENCIAMENTO MENSAL (5.000 Kz via Multicaixa Express)
+   Sem servidor próprio, a validação do código acontece inteiramente aqui no
+   código da página — suficiente para impedir uso casual sem pagar, mas NÃO
+   é segurança de nível bancário (o código-fonte é sempre inspecionável).
+   Troque LICENSE_SECRET por uma frase só sua antes de distribuir a app aos
+   outros professores, para que só os códigos gerados pela SUA cópia sejam
+   aceites.
+   ========================================================================= */
+var LICENSE_SECRET = "ADN-Benguela-JeanPiaget-2026";
+function licenseSignature(dateDigits){
+  var gen = hashStr(dateDigits + "|" + LICENSE_SECRET);
+  return gen().toString(36).toUpperCase().slice(0,6);
+}
+function generateLicenseCode(expiresAtDate){
+  var y = expiresAtDate.getFullYear();
+  var m = String(expiresAtDate.getMonth()+1).padStart(2,"0");
+  var d = String(expiresAtDate.getDate()).padStart(2,"0");
+  var digits = "" + y + m + d;
+  return "ADN-" + digits + "-" + licenseSignature(digits);
+}
+function validateLicenseCode(raw){
+  var code = (raw||"").trim().toUpperCase();
+  var m = code.match(/^ADN-(\d{8})-([A-Z0-9]{1,6})$/);
+  if (!m) return { valid:false, reason:"Formato de código inválido." };
+  var digits = m[1], sig = m[2];
+  if (licenseSignature(digits) !== sig) return { valid:false, reason:"Código não reconhecido." };
+  var y = +digits.slice(0,4), mo = +digits.slice(4,6)-1, da = +digits.slice(6,8);
+  var expiresAt = new Date(y, mo, da, 23, 59, 59).getTime();
+  if (expiresAt < Date.now()) return { valid:false, reason:"Este código já expirou." };
+  return { valid:true, expiresAt: expiresAt, code: code };
+}
+
+/* ---------- state ---------- */
+var state = {
+  role: safeGet(STORE_KEYS.role, null),
+  tests: safeGet(STORE_KEYS.tests, {}),
+  caderneta: safeGet(STORE_KEYS.cad, {}), // { studentKey: { name, idNumber, history:[...] } }
+  turmas: safeGet(STORE_KEYS.turmas, {}), // { turmaId: { id, name, students:[{name,idNumber}] } }
+  contents: safeGet(STORE_KEYS.contents, {}), // { id: {id, name, ext, size, dataUrl|null, text|null, uploadedAt} }
+  attendance: safeGet(STORE_KEYS.attendance, {}), // { studentKey: { faltas, atrasos, log:[{date,type}] } }
+  settings: safeGet(STORE_KEYS.settings, {penFalta:1, penAtraso:0.5}),
+  grelhas: safeGet(STORE_KEYS.grelhas, {}), // { studentKey: { jogoTitulo, scores:[11 nums], total, updatedAt } }
+  licenses: safeGet(STORE_KEYS.licenses, []), // [{name, code, expiresAt, issuedAt}] — registo local do admin
+  profUnlocked: false,
+  isAdminEntry: false,
+  pendingLicense: null,
+  profTab: "inicio",
+  categoryFilter: "",
+  editingTest: null,       // test object being created/edited
+  editingQuestion: null,   // question object being created/edited
+  editingQuestionIndex: -1,
+  editingTurma: null,
+  viewingContentId: null,
+  calMonth: new Date(),
+  calSelectedDay: null,
+  exam: null                // in-progress exam state
+};
+
+function persistAll(){
+  safeSet(STORE_KEYS.tests, state.tests);
+  safeSet(STORE_KEYS.cad, state.caderneta);
+  safeSet(STORE_KEYS.turmas, state.turmas);
+  safeSet(STORE_KEYS.contents, state.contents);
+  safeSet(STORE_KEYS.attendance, state.attendance);
+  safeSet(STORE_KEYS.settings, state.settings);
+  safeSet(STORE_KEYS.grelhas, state.grelhas);
+  safeSet(STORE_KEYS.licenses, state.licenses);
+}
+
+/* ---------- grading scale: all assessments are graded 0–20 ---------- */
+function toGrade20(pct){
+  return Math.round((pct/100)*20);
+}
+function fmtGrade(g){
+  return String(Math.round(g));
+}
+
+/* ---------- seed example test on first run ---------- */
+function seedExample(){
+  if (safeGet(STORE_KEYS.seeded, false)) return;
+  var code = "EXEMPL";
+  if (!state.tests[code]){
+    state.tests[code] = {
+      code: code, id: uid("test"),
+      title: "Exemplo — Metodologia do Ensino da Educação Física",
+      subject: "Educação Física", timerMinutes: 15, shuffle: true,
+      createdAt: Date.now(),
+      attachments: [],
+      questions: [
+        {id:uid("q"), type:"mc", text:"O método de ensino em que o professor demonstra o gesto motor e o aluno reproduz por imitação chama-se:", options:["Descoberta guiada","Resolução de problemas","Método demonstrativo (ou de comando)","Livre exploração"], correctIndex:2, points:4, image:null, table:null, chart:null},
+        {id:uid("q"), type:"mc", text:"A avaliação formativa tem como principal função:", options:["Atribuir a nota final do período","Selecionar os alunos mais aptos","Acompanhar o processo e dar retroação (feedback) contínua","Substituir a observação por testes padronizados"], correctIndex:2, points:4, image:null, table:null, chart:null},
+        {id:uid("q"), type:"mc", text:"O planeamento de uma aula de Educação Física segue geralmente a ordem:", options:["Final, principal, inicial","Inicial, principal, final","Avaliação, aquecimento, alongamento","Jogo livre, teoria, avaliação"], correctIndex:1, points:3, image:null, table:null, chart:null},
+        {id:uid("q"), type:"vf", text:"A diferenciação pedagógica implica aplicar exatamente as mesmas tarefas a todos os alunos, sem exceção.", correctBool:false, points:3, image:null, table:null, chart:null},
+        {id:uid("q"), type:"vf", text:"O princípio da progressão pedagógica defende que os conteúdos devem ir do mais simples para o mais complexo.", correctBool:true, points:3, image:null, table:null, chart:null},
+        {id:uid("q"), type:"vf", text:"A avaliação sumativa serve sobretudo para ajustar o ensino durante o decorrer das aulas.", correctBool:false, points:3, image:null, table:null, chart:null}
+      ]
+    };
+    persistAll();
+  }
+  safeSet(STORE_KEYS.seeded, true);
+}
+seedExample();
+
+/* =========================================================================
+   NAVIGATION
+   ========================================================================= */
+function showScreen(id){
+  var all = document.querySelectorAll(".screen");
+  all.forEach(function(s){ s.classList.toggle("active", s.id === id); });
+  window.scrollTo(0,0);
+}
+function setRole(role){
+  state.role = role;
+  safeSet(STORE_KEYS.role, role);
+  applyRoleUI();
+}
+function applyRoleUI(){
+  document.getElementById("prof-header").style.display = (state.role === "professor" && state.profUnlocked) ? "block" : "none";
+  document.getElementById("aluno-header").style.display = state.role === "aluno" ? "block" : "none";
+  if (state.role === "professor"){
+    if (state.profUnlocked){ renderProfHeaderIdentity(); selectProfTab(state.profTab || "inicio"); }
+    else showProfPasswordGate();
+  }
+  else if (state.role === "aluno"){ resetAlunoFlow(); }
+  else { setRole("aluno"); } // por omissão, qualquer acesso sem indicação explícita é tratado como aluno
+}
+document.getElementById("role-aluno").addEventListener("click", function(){ setRole("aluno"); });
+document.getElementById("switch-role-prof").addEventListener("click", function(){ state.profUnlocked = false; setRole("aluno"); });
+
+/* ---------- password gate & profile (com licenciamento mensal) ---------- */
+function getProfProfile(){ return safeGet(STORE_KEYS.profProfile, {}) || {}; }
+function licenseIsExpired(profile){
+  return !profile.isAdmin && profile.license && profile.license.expiresAt < Date.now();
+}
+function showProfPasswordGate(){
+  var auth = getProfProfile();
+  if (auth.password){
+    if (licenseIsExpired(auth)){
+      document.getElementById("license-renew-code").value = "";
+      document.getElementById("license-renew-error").textContent = "";
+      showScreen("screen-prof-license-expired");
+      return;
+    }
+    document.getElementById("prof-login-error").textContent = "";
+    document.getElementById("prof-login-password").value = "";
+    document.getElementById("prof-login-title").textContent = auth.name ? ("Olá, "+auth.name) : "Área do Professor";
+    showScreen("screen-prof-login");
+  } else if (state.isAdminEntry){
+    document.getElementById("setpw-name").value = "";
+    document.getElementById("setpw-password").value = "";
+    document.getElementById("setpw-password2").value = "";
+    showScreen("screen-prof-setpw");
+  } else {
+    document.getElementById("license-entry-code").value = "";
+    document.getElementById("license-entry-error").textContent = "";
+    showScreen("screen-prof-license-entry");
+  }
+}
+document.getElementById("license-entry-submit").addEventListener("click", function(){
+  var res = validateLicenseCode(document.getElementById("license-entry-code").value);
+  if (!res.valid){ document.getElementById("license-entry-error").textContent = res.reason; return; }
+  state.pendingLicense = { code: res.code, expiresAt: res.expiresAt };
+  document.getElementById("setpw-name").value = "";
+  document.getElementById("setpw-password").value = "";
+  document.getElementById("setpw-password2").value = "";
+  showScreen("screen-prof-setpw");
+});
+document.getElementById("license-entry-back").addEventListener("click", function(){ setRole("aluno"); });
+document.getElementById("license-renew-submit").addEventListener("click", function(){
+  var res = validateLicenseCode(document.getElementById("license-renew-code").value);
+  if (!res.valid){ document.getElementById("license-renew-error").textContent = res.reason; return; }
+  var profile = getProfProfile();
+  profile.license = { code: res.code, expiresAt: res.expiresAt };
+  safeSet(STORE_KEYS.profProfile, profile);
+  toast("Licença renovada até " + fmtDate(res.expiresAt) + ".");
+  showProfPasswordGate();
+});
+document.getElementById("license-renew-logout").addEventListener("click", function(){ setRole("aluno"); });
+document.getElementById("setpw-save-btn").addEventListener("click", function(){
+  var name = document.getElementById("setpw-name").value.trim();
+  var p1 = document.getElementById("setpw-password").value;
+  var p2 = document.getElementById("setpw-password2").value;
+  if (p1.length < 4){ toast("A password deve ter pelo menos 4 caracteres."); return; }
+  if (p1 !== p2){ toast("As passwords não coincidem."); return; }
+  var profile = getProfProfile();
+  profile.name = name; profile.password = p1; profile.photo = profile.photo || null;
+  if (state.isAdminEntry){
+    profile.isAdmin = true;
+  } else if (state.pendingLicense){
+    profile.isAdmin = false;
+    profile.license = state.pendingLicense;
+  }
+  safeSet(STORE_KEYS.profProfile, profile);
+  state.profUnlocked = true;
+  applyRoleUI();
+});
+function attemptProfLogin(){
+  var auth = getProfProfile();
+  var entered = document.getElementById("prof-login-password").value;
+  if (auth.password && entered === auth.password){ state.profUnlocked = true; applyRoleUI(); }
+  else { document.getElementById("prof-login-error").textContent = "Password incorreta."; }
+}
+document.getElementById("prof-login-btn").addEventListener("click", attemptProfLogin);
+document.getElementById("prof-login-password").addEventListener("keydown", function(e){ if (e.key === "Enter") attemptProfLogin(); });
+document.getElementById("prof-forgot-btn").addEventListener("click", function(){
+  if (!confirm("Isto remove apenas a password atual — as suas avaliações, turmas e caderneta mantêm-se guardadas. Deseja continuar?")) return;
+  var profile = getProfProfile();
+  delete profile.password;
+  safeSet(STORE_KEYS.profProfile, profile);
+  showProfPasswordGate();
+});
+document.getElementById("prof-login-back-btn").addEventListener("click", function(){ setRole("aluno"); });
+
+function renderProfHeaderIdentity(){
+  var p = getProfProfile();
+  document.getElementById("prof-header-sub").textContent = p.name ? ("Área do Professor — " + p.name) : "Área do Professor";
+  var img = document.getElementById("prof-header-logo-img");
+  var svg = document.getElementById("prof-header-logo-svg");
+  if (p.photo){ img.src = p.photo; img.style.display = "block"; svg.style.display = "none"; }
+  else { img.style.display = "none"; svg.style.display = "block"; }
+}
+document.getElementById("prof-header-avatar-btn").addEventListener("click", openProfProfileScreen);
+document.getElementById("back-from-profile").addEventListener("click", function(){ selectProfTab("inicio"); });
+function openProfProfileScreen(){
+  var p = getProfProfile();
+  document.getElementById("profile-name-input").value = p.name || "";
+  document.getElementById("profile-newpw-input").value = "";
+  var preview = document.getElementById("profile-avatar-preview");
+  preview.innerHTML = p.photo ? '<img src="'+p.photo+'" style="width:100%; height:100%; object-fit:cover;">' : "🧬";
+  document.getElementById("profile-prof-link").value = window.location.href.split("?")[0] + "?modo=admin";
+  document.getElementById("admin-license-card").style.display = p.isAdmin ? "block" : "none";
+  if (p.isAdmin){
+    document.getElementById("license-gen-result").style.display = "none";
+    document.getElementById("license-gen-name").value = "";
+    document.getElementById("license-gen-months").value = 1;
+    renderLicenseHistory();
+  }
+  showScreen("screen-prof-profile");
+}
+document.getElementById("copy-prof-link-btn").addEventListener("click", function(){
+  copyToClipboard(document.getElementById("profile-prof-link").value);
+});
+
+/* ---------- geração de licenças (só visível para o administrador) ---------- */
+function renderLicenseHistory(){
+  var wrap = document.getElementById("license-history-list");
+  var list = state.licenses.slice().sort(function(a,b){ return b.issuedAt-a.issuedAt; });
+  if (!list.length){ wrap.innerHTML = '<p class="small muted">Ainda não gerou nenhuma licença.</p>'; return; }
+  wrap.innerHTML = list.map(function(l){
+    var expired = l.expiresAt < Date.now();
+    return '<div class="test-item"><div class="ti-main"><div class="ti-title">'+escapeHtml(l.name||"—")+'</div><div class="ti-meta">'+l.code+' · válida até '+fmtDate(l.expiresAt)+'</div></div>'+
+      '<span class="pill '+(expired?"warn":"accent")+'">'+(expired?"Expirada":"Ativa")+'</span></div>';
+  }).join("");
+}
+document.getElementById("license-gen-btn").addEventListener("click", function(){
+  var name = document.getElementById("license-gen-name").value.trim();
+  var months = Math.max(1, Math.min(12, +document.getElementById("license-gen-months").value || 1));
+  var expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + months*30);
+  var code = generateLicenseCode(expiresAt);
+  state.licenses.push({ name: name || "(sem nome)", code: code, expiresAt: expiresAt.getTime(), issuedAt: Date.now() });
+  persistAll();
+  document.getElementById("license-gen-code").textContent = code;
+  document.getElementById("license-gen-result").style.display = "block";
+  document.getElementById("license-gen-copy").onclick = function(){ copyToClipboard(code); };
+  document.getElementById("license-gen-whatsapp").onclick = function(){
+    var msg = "Olá" + (name?(" "+name):"") + "! Aqui está o seu código de acesso à ADN (mensalidade de 5.000 Kz via Multicaixa Express), válido até " + fmtDate(expiresAt.getTime()) + ":\n\n" + code;
+    window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
+  };
+  renderLicenseHistory();
+  toast("Licença gerada — válida até " + fmtDate(expiresAt.getTime()) + ".");
+});
+document.getElementById("profile-photo-input").addEventListener("change", function(e){
+  var file = e.target.files[0]; if (!file) return;
+  var img = new Image(); var reader = new FileReader();
+  reader.onload = function(){
+    img.onload = function(){
+      var size = 220, canvas = document.createElement("canvas");
+      canvas.width = size; canvas.height = size;
+      var ctx = canvas.getContext("2d");
+      var scale = Math.max(size/img.width, size/img.height);
+      var sw = size/scale, sh = size/scale;
+      var sx = (img.width-sw)/2, sy = (img.height-sh)/2;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+      var dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      document.getElementById("profile-avatar-preview").innerHTML = '<img src="'+dataUrl+'" style="width:100%; height:100%; object-fit:cover;">';
+      document.getElementById("profile-avatar-preview").dataset.pending = dataUrl;
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById("profile-save-btn").addEventListener("click", function(){
+  var profile = getProfProfile();
+  profile.name = document.getElementById("profile-name-input").value.trim();
+  var pending = document.getElementById("profile-avatar-preview").dataset.pending;
+  if (pending) profile.photo = pending;
+  var newpw = document.getElementById("profile-newpw-input").value;
+  if (newpw){
+    if (newpw.length < 4){ toast("A nova password deve ter pelo menos 4 caracteres."); return; }
+    profile.password = newpw;
+  }
+  safeSet(STORE_KEYS.profProfile, profile);
+  toast("Perfil atualizado.");
+  renderProfHeaderIdentity();
+  selectProfTab("inicio");
+});
+
+/* =========================================================================
+   PROFESSOR: TABS
+   ========================================================================= */
+document.getElementById("prof-tabbar").addEventListener("click", function(e){
+  var btn = e.target.closest(".tab");
+  if (!btn) return;
+  selectProfTab(btn.getAttribute("data-tab"));
+});
+function selectProfTab(tab){
+  state.profTab = tab;
+  document.querySelectorAll("#prof-tabbar .tab").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-tab")===tab); });
+  document.getElementById("timer-wrap") && (document.getElementById("timer-wrap").style.display = "none");
+  var map = { inicio:"screen-prof-inicio", avaliacoes:"screen-prof-avaliacoes", conteudos:"screen-conteudos", turmas:"screen-turmas", caderneta:"screen-caderneta", pauta:"screen-pauta", assiduidade:"screen-assiduidade", mensagens:"screen-mensagens", grelha:"screen-grelha", calendario:"screen-calendario", evolucao:"screen-evolucao" };
+  showScreen(map[tab]);
+  if (tab === "inicio") renderProfInicio();
+  if (tab === "avaliacoes") renderTestsList();
+  if (tab === "conteudos") renderLibList();
+  if (tab === "turmas") renderTurmasList();
+  if (tab === "caderneta") renderCaderneta();
+  if (tab === "pauta") renderPauta();
+  if (tab === "assiduidade") renderAssiduidade();
+  if (tab === "mensagens") renderMensagens();
+  if (tab === "grelha") renderGrelhaList();
+  if (tab === "calendario") renderCalendar();
+  if (tab === "evolucao") renderEvolucao();
+}
+
+/* ---------- INÍCIO ---------- */
+function allHistoryEntries(){
+  var out = [];
+  Object.keys(state.caderneta).forEach(function(sk){
+    var st = state.caderneta[sk];
+    (st.history||[]).forEach(function(h){ out.push(Object.assign({studentKey:sk, studentName:st.name}, h)); });
+  });
+  return out;
+}
+function renderProfInicio(){
+  var tests = Object.values(state.tests);
+  var students = Object.keys(state.caderneta).length;
+  var entries = allHistoryEntries();
+  var avgPct = entries.length ? Math.round(entries.reduce(function(s,e){return s+e.pct;},0)/entries.length) : 0;
+  var flagged = entries.filter(function(e){ return e.violations && (e.violations.copy + e.violations.rightClick + e.violations.tabSwitch) > 0; }).length;
+
+  document.getElementById("prof-stats").innerHTML =
+    statCard(tests.length, "Avaliações criadas") +
+    statCard(students, "Alunos na caderneta") +
+    statCard(entries.length, "Resultados registados") +
+    statCard(avgPct + "%", "Média geral") ;
+
+  var recentWrap = document.getElementById("prof-recent-tests");
+  if (!tests.length){ recentWrap.innerHTML = emptyState("📋","Ainda não criou nenhuma avaliação."); return; }
+  var sorted = tests.slice().sort(function(a,b){ return b.createdAt-a.createdAt; }).slice(0,4);
+  recentWrap.innerHTML = sorted.map(function(t){
+    return '<div class="test-item"><div class="ti-main"><div class="ti-title">'+escapeHtml(t.title)+'</div><div class="ti-meta">'+t.questions.length+' perguntas · '+t.timerMinutes+' min</div></div><span class="code-chip">'+t.code+'</span></div>';
+  }).join("");
+  if (flagged){
+    recentWrap.insertAdjacentHTML("afterend", '<div class="card" style="background:var(--danger-bg); border:none; margin-top:12px;"><p class="small" style="color:var(--danger); margin:0;">⚠ '+flagged+' resultado(s) com eventos suspeitos (cópia / mudança de página) registados. Consulte a Caderneta.</p></div>');
+  }
+}
+function statCard(num, label){ return '<div class="stat-card"><div class="stat-num">'+num+'</div><div class="stat-label">'+label+'</div></div>'; }
+function emptyState(icon, text){ return '<div class="empty"><div class="big">'+icon+'</div><p>'+text+'</p></div>'; }
+
+/* ---------- Import result ---------- */
+document.getElementById("import-result-btn").addEventListener("click", function(){
+  var raw = document.getElementById("import-result-code").value.trim();
+  if (!raw){ toast("Cole um código de resultado primeiro."); return; }
+  importResultCode(raw);
+});
+document.getElementById("import-result-file").addEventListener("change", function(e){
+  var file = e.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){ importResultCode(reader.result); };
+  reader.readAsText(file);
+});
+function decodeResultCode(raw){
+  raw = raw.trim();
+  try{ return JSON.parse(raw); }catch(e){}
+  try{ return JSON.parse(decodeURIComponent(escape(atob(raw)))); }catch(e){}
+  return null;
+}
+function importResultCode(raw){
+  var res = decodeResultCode(raw);
+  if (!res || !res.adnResult){ toast("Código inválido ou corrompido."); return; }
+  var test = state.tests[res.testCode];
+  var studentKey = (res.studentIdNumber||"").trim().toLowerCase() + "|" + (res.studentName||"").trim().toLowerCase();
+  if (!state.caderneta[studentKey]) state.caderneta[studentKey] = { name: res.studentName, idNumber: res.studentIdNumber, photo:null, history: [] };
+  if (res.studentPhoto) state.caderneta[studentKey].photo = res.studentPhoto;
+  var already = state.caderneta[studentKey].history.some(function(h){ return h.submittedAt === res.submittedAt && h.testCode === res.testCode; });
+  if (already){ toast("Este resultado já tinha sido importado."); return; }
+  state.caderneta[studentKey].history.push({
+    testCode: res.testCode, testTitle: test ? test.title : (res.testTitle||"Avaliação"),
+    submittedAt: res.submittedAt, score: res.score, total: res.total, pct: res.pct,
+    grade20: (typeof res.grade20 === "number") ? res.grade20 : toGrade20(res.pct),
+    studentMessage: res.studentMessage || "",
+    weekKey: isoWeekKey(res.submittedAt), violations: res.violations || {copy:0,rightClick:0,tabSwitch:0}
+  });
+  persistAll();
+  document.getElementById("import-result-code").value = "";
+  toast("Resultado de " + res.studentName + " importado com sucesso.");
+  renderProfInicio();
+  if (state.profTab === "caderneta") renderCaderneta();
+}
+
+/* =========================================================================
+   PROFESSOR: LISTA DE AVALIAÇÕES
+   ========================================================================= */
+function renderTestsList(){
+  var allTests = Object.values(state.tests).sort(function(a,b){ return b.createdAt-a.createdAt; });
+  var cats = Array.from(new Set(allTests.map(function(t){ return t.category||""; }).filter(Boolean)));
+  var filterWrap = document.getElementById("category-filters");
+  if (!cats.length){ filterWrap.innerHTML = ""; }
+  else {
+    var chips = ['<button class="pill '+(state.categoryFilter===""?"accent":"")+'" data-cat="">Todas</button>']
+      .concat(cats.map(function(c){ return '<button class="pill '+(state.categoryFilter===c?"accent":"")+'" data-cat="'+escapeHtml(c)+'" style="cursor:pointer;">'+escapeHtml(c)+'</button>'; }));
+    filterWrap.innerHTML = chips.join(" ");
+    filterWrap.querySelectorAll("[data-cat]").forEach(function(b){
+      b.style.cursor = "pointer";
+      b.addEventListener("click", function(){ state.categoryFilter = b.getAttribute("data-cat"); renderTestsList(); });
+    });
+  }
+  var tests = state.categoryFilter ? allTests.filter(function(t){ return t.category === state.categoryFilter; }) : allTests;
+  var wrap = document.getElementById("tests-list");
+  if (!tests.length){ wrap.innerHTML = emptyState("🧪","Nenhuma avaliação nesta categoria."); return; }
+  wrap.innerHTML = '<div class="card">' + tests.map(function(t){
+    var turma = t.turmaId && state.turmas[t.turmaId] ? state.turmas[t.turmaId].name : null;
+    var metaBits = [t.questions.length+' perguntas', t.timerMinutes+' min', fmtDate(t.createdAt)];
+    if (t.category) metaBits.push(t.category);
+    if (turma) metaBits.push("Turma: "+turma);
+    return '<div class="test-item"><div class="ti-main"><div class="ti-title">'+escapeHtml(t.title)+'</div><div class="ti-meta">'+metaBits.join(" · ")+'</div></div>'+
+      '<span class="code-chip" data-open="'+t.code+'" style="cursor:pointer;">'+t.code+'</span></div>';
+  }).join("") + '</div>';
+  wrap.querySelectorAll("[data-open]").forEach(function(el){
+    el.addEventListener("click", function(){ openTestEditor(state.tests[el.getAttribute("data-open")]); });
+  });
+}
+document.getElementById("new-test-btn").addEventListener("click", function(){
+  openTestEditor(null);
+});
+document.getElementById("back-to-tests").addEventListener("click", function(){ selectProfTab("avaliacoes"); });
+
+function blankTest(){
+  return { code:null, id:uid("test"), title:"", subject:"", category:"", turmaId:"", timerMinutes:20, shuffle:true, messageToStudents:"", createdAt:Date.now(), attachments:[], questions:[] };
+}
+function populateTurmaSelects(){
+  var opts = '<option value="">Nenhuma — aberta a qualquer aluno</option>' +
+    Object.values(state.turmas).map(function(tu){ return '<option value="'+tu.id+'">'+escapeHtml(tu.name)+' ('+tu.students.length+' alunos)</option>'; }).join("");
+  document.getElementById("test-turma").innerHTML = opts;
+}
+function openTestEditor(test){
+  state.editingTest = test ? JSON.parse(JSON.stringify(test)) : blankTest();
+  document.getElementById("test-title").value = state.editingTest.title;
+  document.getElementById("test-subject").value = state.editingTest.subject;
+  document.getElementById("test-timer").value = state.editingTest.timerMinutes;
+  document.getElementById("test-shuffle").checked = state.editingTest.shuffle !== false;
+  document.getElementById("test-message").value = state.editingTest.messageToStudents || "";
+  populateTurmaSelects();
+  document.getElementById("test-turma").value = state.editingTest.turmaId || "";
+  var cat = state.editingTest.category || "";
+  var catSelect = document.getElementById("test-category");
+  var presetValues = Array.prototype.map.call(catSelect.options, function(o){ return o.value; });
+  if (cat && presetValues.indexOf(cat) === -1){
+    catSelect.value = "__custom__";
+    document.getElementById("test-category-custom-wrap").style.display = "block";
+    document.getElementById("test-category-custom").value = cat;
+  } else {
+    catSelect.value = cat;
+    document.getElementById("test-category-custom-wrap").style.display = "none";
+    document.getElementById("test-category-custom").value = "";
+  }
+  document.getElementById("publish-result").style.display = "none";
+  document.getElementById("content-extract-status").textContent = "";
+  document.getElementById("extracted-paragraphs").innerHTML = "";
+  renderAttachments();
+  renderQuestionsList();
+  showScreen("screen-test-editor");
+}
+document.getElementById("test-category").addEventListener("change", function(){
+  var custom = this.value === "__custom__";
+  document.getElementById("test-category-custom-wrap").style.display = custom ? "block" : "none";
+  state.editingTest.category = custom ? document.getElementById("test-category-custom").value.trim() : this.value;
+});
+document.getElementById("test-category-custom").addEventListener("input", function(){
+  state.editingTest.category = this.value.trim();
+});
+document.getElementById("test-turma").addEventListener("change", function(){
+  state.editingTest.turmaId = this.value;
+});
+function renderAttachments(){
+  var wrap = document.getElementById("test-attachments");
+  wrap.innerHTML = state.editingTest.attachments.map(function(a,i){
+    return '<span class="attach-chip">📎 '+escapeHtml(a.name)+' <button data-i="'+i+'">✕</button></span>';
+  }).join("");
+  wrap.querySelectorAll("button[data-i]").forEach(function(b){
+    b.addEventListener("click", function(){ state.editingTest.attachments.splice(+b.getAttribute("data-i"),1); renderAttachments(); });
+  });
+}
+function renderQuestionsList(){
+  var wrap = document.getElementById("questions-list");
+  document.getElementById("q-count-pill").textContent = state.editingTest.questions.length;
+  var totalPts = state.editingTest.questions.reduce(function(s,q){ return s+(+q.points||0); }, 0);
+  var ptsPill = document.getElementById("q-total-points-pill");
+  ptsPill.textContent = fmtGrade(totalPts) + " / 20 valores";
+  ptsPill.className = "pill " + (Math.abs(totalPts-20) < 0.01 ? "accent" : (totalPts>20 ? "warn" : ""));
+  if (!state.editingTest.questions.length){ wrap.innerHTML = emptyState("❓","Ainda sem perguntas."); return; }
+  wrap.innerHTML = state.editingTest.questions.map(function(q,i){
+    var typeLabel = q.type === "mc" ? "Escolha múltipla" : "Verdadeiro/Falso";
+    var media = [];
+    if (q.image) media.push("🖼");
+    if (q.table) media.push("▦");
+    if (q.chart) media.push("📊");
+    return '<div class="q-list-item" data-i="'+i+'"><div class="qh"><div><span class="pill">'+typeLabel+'</span> <span class="pill accent">'+q.points+' pts</span> '+(media.length? '<span class="pill">'+media.join(" ")+'</span>':'')+'<p style="margin:8px 0 0 0; font-size:14px; font-weight:500;">'+escapeHtml(q.text||"(sem enunciado)")+'</p></div><span class="muted">›</span></div></div>';
+  }).join("");
+  wrap.querySelectorAll(".q-list-item").forEach(function(el){
+    el.addEventListener("click", function(){ openQuestionEditor(+el.getAttribute("data-i")); });
+  });
+}
+["test-title","test-subject","test-timer"].forEach(function(id){
+  document.getElementById(id).addEventListener("input", function(){
+    if (!state.editingTest) return;
+    state.editingTest.title = document.getElementById("test-title").value;
+    state.editingTest.subject = document.getElementById("test-subject").value;
+    state.editingTest.timerMinutes = Math.max(1, +document.getElementById("test-timer").value || 1);
+  });
+});
+document.getElementById("test-shuffle").addEventListener("change", function(){
+  state.editingTest.shuffle = document.getElementById("test-shuffle").checked;
+});
+document.getElementById("test-message").addEventListener("input", function(){
+  state.editingTest.messageToStudents = this.value;
+});
+
+/* ---------- content upload / extraction ---------- */
+document.getElementById("content-upload").addEventListener("change", function(e){
+  var file = e.target.files[0]; if (!file) return;
+  var status = document.getElementById("content-extract-status");
+  var name = file.name.toLowerCase();
+  state.editingTest.attachments.push({name:file.name});
+  renderAttachments();
+
+  if (name.endsWith(".docx")){
+    if (window.__mammothFailed || typeof mammoth === "undefined"){ status.textContent = "Extração automática indisponível — ficheiro anexado apenas como referência."; return; }
+    status.textContent = "A extrair texto do documento Word...";
+    var reader = new FileReader();
+    reader.onload = function(){
+      mammoth.extractRawText({arrayBuffer: reader.result}).then(function(res){
+        status.textContent = "Texto extraído. Escolha os parágrafos que quer transformar em perguntas:";
+        showExtractedParagraphs(res.value);
+      }).catch(function(){ status.textContent = "Não foi possível extrair texto deste ficheiro."; });
+    };
+    reader.readAsArrayBuffer(file);
+  } else if (name.endsWith(".pdf")){
+    if (window.__pdfjsFailed || typeof pdfjsLib === "undefined"){ status.textContent = "Extração automática indisponível — ficheiro anexado apenas como referência."; return; }
+    status.textContent = "A extrair texto do PDF...";
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    var reader2 = new FileReader();
+    reader2.onload = function(){
+      pdfjsLib.getDocument({data: reader2.result}).promise.then(function(pdf){
+        var pagesText = []; var p = Promise.resolve();
+        var pending = [];
+        for (var i=1;i<=pdf.numPages;i++){
+          pending.push(pdf.getPage(i).then(function(page){ return page.getTextContent(); }).then(function(tc){
+            pagesText.push(tc.items.map(function(it){ return it.str; }).join(" "));
+          }));
+        }
+        Promise.all(pending).then(function(){
+          status.textContent = "Texto extraído. Escolha os parágrafos que quer transformar em perguntas:";
+          showExtractedParagraphs(pagesText.join("\n\n"));
+        });
+      }).catch(function(){ status.textContent = "Não foi possível extrair texto deste PDF."; });
+    };
+    reader2.readAsArrayBuffer(file);
+  } else {
+    status.textContent = "Ficheiro anexado como referência (extração automática só está disponível para .docx e .pdf).";
+  }
+});
+function showExtractedParagraphs(text){
+  var paras = text.split(/\n+/).map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 25; }).slice(0,30);
+  var wrap = document.getElementById("extracted-paragraphs");
+  if (!paras.length){ wrap.innerHTML = '<p class="small muted">Nenhum parágrafo com conteúdo suficiente foi encontrado.</p>'; return; }
+  wrap.innerHTML = paras.map(function(p,i){
+    return '<div class="card" style="padding:10px 12px; margin-bottom:6px;"><p class="small" style="margin:0 0 6px 0;">'+escapeHtml(p.slice(0,220))+(p.length>220?"…":"")+'</p><button class="btn btn-ghost btn-sm" data-para="'+i+'">Usar como pergunta</button></div>';
+  }).join("");
+  wrap.querySelectorAll("[data-para]").forEach(function(btn, i){
+    btn.addEventListener("click", function(){
+      openQuestionEditor(-1);
+      document.getElementById("q-text").value = paras[i].slice(0,300);
+      toast("Texto inserido — complete as opções e a resposta correta.");
+    });
+  });
+}
+
+/* =========================================================================
+   PROFESSOR: BIBLIOTECA DE CONTEÚDOS (upload em vários formatos)
+   ========================================================================= */
+var LIB_MAX_BYTES = 4 * 1024 * 1024; // ~4MB per file, localStorage-friendly
+function fileIcon(ext){
+  if (["jpg","jpeg","png","gif","webp"].indexOf(ext) !== -1) return "🖼";
+  if (ext === "pdf") return "📕";
+  if (["doc","docx"].indexOf(ext) !== -1) return "📘";
+  if (["ppt","pptx"].indexOf(ext) !== -1) return "📙";
+  if (["xls","xlsx","csv"].indexOf(ext) !== -1) return "📗";
+  return "📄";
+}
+function fmtBytes(n){
+  if (n < 1024) return n + " B";
+  if (n < 1024*1024) return (n/1024).toFixed(0) + " KB";
+  return (n/1024/1024).toFixed(1) + " MB";
+}
+document.getElementById("lib-upload-input").addEventListener("change", function(e){
+  var files = Array.prototype.slice.call(e.target.files);
+  files.forEach(function(file){ handleLibFile(file); });
+  e.target.value = "";
+});
+function handleLibFile(file){
+  if (file.size > LIB_MAX_BYTES){
+    toast('"'+file.name+'" é demasiado grande (máx. ~4MB) e não foi guardado.');
+    return;
+  }
+  var ext = (file.name.split(".").pop()||"").toLowerCase();
+  var item = { id: uid("lib"), name:file.name, ext:ext, size:file.size, uploadedAt: Date.now(), dataUrl:null, text:null };
+  var isImage = /^image\//.test(file.type) || ["jpg","jpeg","png","gif","webp"].indexOf(ext)!==-1;
+  var reader = new FileReader();
+  reader.onload = function(){
+    if (isImage){
+      item.dataUrl = reader.result;
+      state.contents[item.id] = item; persistAll(); renderLibList();
+      toast('"'+file.name+'" adicionado.');
+    } else {
+      // Keep the original bytes so it can be downloaded again later.
+      item.dataUrl = reader.result;
+      state.contents[item.id] = item; persistAll(); renderLibList();
+      toast('"'+file.name+'" adicionado.');
+      if (ext === "docx" && !(window.__mammothFailed) && typeof mammoth !== "undefined"){
+        fetch(item.dataUrl).then(function(r){return r.arrayBuffer();}).then(function(buf){
+          return mammoth.extractRawText({arrayBuffer:buf});
+        }).then(function(res){ item.text = res.value; persistAll(); }).catch(function(){});
+      } else if (ext === "pdf" && !(window.__pdfjsFailed) && typeof pdfjsLib !== "undefined"){
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        fetch(item.dataUrl).then(function(r){return r.arrayBuffer();}).then(function(buf){
+          return pdfjsLib.getDocument({data:buf}).promise;
+        }).then(function(pdf){
+          var pending = []; var pages = [];
+          for (var i=1;i<=pdf.numPages;i++){
+            pending.push(pdf.getPage(i).then(function(p){return p.getTextContent();}).then(function(tc){ pages.push(tc.items.map(function(it){return it.str;}).join(" ")); }));
+          }
+          return Promise.all(pending).then(function(){ item.text = pages.join("\n\n"); persistAll(); });
+        }).catch(function(){});
+      }
+    }
+  };
+  reader.readAsDataURL(file);
+}
+function renderLibList(){
+  var items = Object.values(state.contents).sort(function(a,b){ return b.uploadedAt-a.uploadedAt; });
+  document.getElementById("lib-count-pill").textContent = items.length;
+  var wrap = document.getElementById("lib-list");
+  if (!items.length){ wrap.innerHTML = emptyState("📎","Ainda sem materiais carregados."); return; }
+  wrap.innerHTML = '<div class="card">' + items.map(function(it){
+    return '<div class="lib-item" data-open="'+it.id+'" style="cursor:pointer;"><span class="lib-icon">'+fileIcon(it.ext)+'</span>'+
+      '<div class="ti-main"><div class="ti-title">'+escapeHtml(it.name)+'</div><div class="ti-meta">'+fmtBytes(it.size)+' · '+fmtDate(it.uploadedAt)+'</div></div><span class="muted">›</span></div>';
+  }).join("") + '</div>';
+  wrap.querySelectorAll("[data-open]").forEach(function(el){
+    el.addEventListener("click", function(){ openLibView(el.getAttribute("data-open")); });
+  });
+}
+document.getElementById("back-to-conteudos").addEventListener("click", function(){ selectProfTab("conteudos"); });
+function openLibView(id){
+  state.viewingContentId = id;
+  var it = state.contents[id];
+  document.getElementById("lib-view-title").textContent = it.name;
+  document.getElementById("lib-view-meta").textContent = fmtBytes(it.size) + " · carregado em " + fmtDate(it.uploadedAt);
+  var body = document.getElementById("lib-view-body");
+  var isImage = ["jpg","jpeg","png","gif","webp"].indexOf(it.ext)!==-1;
+  if (isImage){
+    body.innerHTML = '<img src="'+it.dataUrl+'" style="max-width:100%; border-radius:10px; border:1px solid var(--border);">';
+  } else if (it.text){
+    body.innerHTML = '<div class="card-2" style="max-height:340px; overflow-y:auto; padding:12px; border-radius:10px; background:var(--card-2); font-size:13.5px; white-space:pre-wrap;">'+escapeHtml(it.text.slice(0,6000))+(it.text.length>6000?"\n\n…(texto truncado)":"")+'</div>';
+  } else {
+    body.innerHTML = '<p class="muted small">Sem pré-visualização de texto disponível para este tipo de ficheiro ('+it.ext.toUpperCase()+'). Descarregue para abrir no programa apropriado.</p>';
+  }
+  showScreen("screen-conteudo-view");
+}
+document.getElementById("lib-view-download").addEventListener("click", function(){
+  var it = state.contents[state.viewingContentId];
+  if (!it) return;
+  fetch(it.dataUrl).then(function(r){return r.blob();}).then(function(blob){
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = it.name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  }).catch(function(){ toast("Não foi possível preparar o ficheiro para download."); });
+});
+document.getElementById("lib-view-delete").addEventListener("click", function(){
+  if (!confirm("Eliminar este material?")) return;
+  delete state.contents[state.viewingContentId];
+  persistAll();
+  selectProfTab("conteudos");
+});
+
+/* =========================================================================
+   CRIAR PERGUNTAS COM AJUDA DE IA (fluxo copiar-prompt / colar-resultado)
+   Esta página publicada não pode chamar a API da Claude diretamente (bloqueado
+   por segurança do lado da plataforma), por isso o fluxo é: copiar um prompt
+   pronto → gerar as perguntas numa conversa com o Claude → colar o resultado
+   aqui, num formato simples que a ADN sabe interpretar automaticamente.
+   ========================================================================= */
+document.getElementById("copy-ai-prompt-btn").addEventListener("click", function(){
+  var t = state.editingTest;
+  var tema = t.title || t.subject || "o tema da avaliação";
+  var prompt = "Gera 8 perguntas de avaliação sobre \"" + tema + "\"" + (t.subject ? (" (disciplina: " + t.subject + ")") : "") + ", " +
+    "misturando escolha múltipla (4 opções) e verdadeiro/falso, com dificuldade variada. " +
+    "Devolve APENAS as perguntas, uma por linha, sem numeração nem texto extra, exatamente neste formato:\n\n" +
+    "Escolha múltipla:\nMC | texto da pergunta | opção A | opção B | opção C | opção D | número da opção correta (1 a 4) | pontos (ex: 2)\n\n" +
+    "Verdadeiro/Falso:\nVF | texto da pergunta | V ou F (resposta correta) | pontos (ex: 2)\n\n" +
+    "Exemplo de uma linha válida de cada tipo:\n" +
+    "MC | Qual destes é um método ativo de ensino? | Aula expositiva | Resolução de problemas | Cópia do quadro | Leitura silenciosa | 2 | 2\n" +
+    "VF | A avaliação formativa serve para atribuir a nota final. | F | 2\n\n" +
+    "Os pontos de todas as perguntas devem somar aproximadamente 20.";
+  copyToClipboard(prompt);
+  toast("Prompt copiado — cole-o numa conversa com o Claude.");
+});
+function parseAiQuestionLine(line){
+  var parts = line.split("|").map(function(p){ return p.trim(); });
+  if (parts.length < 2) return null;
+  var type = parts[0].toUpperCase();
+  if (type === "MC" || type === "ESCOLHA MÚLTIPLA" || type === "EM"){
+    if (parts.length < 7) return null;
+    var text = parts[1];
+    var opts = [parts[2],parts[3],parts[4],parts[5]].filter(function(o){ return o; });
+    var correctIdx = parseInt(parts[6],10);
+    var points = parseFloat(parts[7]);
+    if (!text || opts.length < 2 || isNaN(correctIdx)) return null;
+    return blankQuestionFromAi("mc", text, opts, Math.min(Math.max(correctIdx-1,0), opts.length-1), isNaN(points)?2:points);
+  }
+  if (type === "VF" || type === "V/F" || type === "VERDADEIRO/FALSO"){
+    if (parts.length < 3) return null;
+    var text2 = parts[1];
+    var ans = (parts[2]||"").trim().toUpperCase();
+    var points2 = parseFloat(parts[3]);
+    if (!text2 || (ans!=="V" && ans!=="F" && ans!=="VERDADEIRO" && ans!=="FALSO")) return null;
+    var boolAns = (ans==="V"||ans==="VERDADEIRO");
+    return blankQuestionFromAi("vf", text2, null, null, isNaN(points2)?2:points2, boolAns);
+  }
+  return null;
+}
+function blankQuestionFromAi(type, text, options, correctIndex, points, correctBool){
+  return { id: uid("q"), type:type, text:text, options: options||["","",""], correctIndex: correctIndex||0,
+    correctBool: !!correctBool, points: points, image:null, table:null, chart:null };
+}
+document.getElementById("import-ai-questions-btn").addEventListener("click", function(){
+  var raw = document.getElementById("ai-paste-area").value;
+  var lines = raw.split("\n").map(function(l){ return l.trim(); }).filter(function(l){ return l && (l.toUpperCase().indexOf("MC")===0 || l.toUpperCase().indexOf("VF")===0); });
+  if (!lines.length){ toast("Não encontrei perguntas no formato esperado."); return; }
+  var added = 0, failed = 0;
+  lines.forEach(function(line){
+    var q = parseAiQuestionLine(line);
+    if (q){ state.editingTest.questions.push(q); added++; } else { failed++; }
+  });
+  document.getElementById("ai-import-status").textContent = added + " pergunta(s) importada(s)." + (failed ? (" " + failed + " linha(s) não reconhecida(s).") : "");
+  document.getElementById("ai-paste-area").value = "";
+  renderQuestionsList();
+  if (added) toast(added + " pergunta(s) adicionada(s) — reveja-as antes de publicar.");
+});
+
+/* ---------- publish / save test ---------- */
+document.getElementById("save-test-btn").addEventListener("click", function(){
+  var t = state.editingTest;
+  if (!t.title.trim()){ toast("Dê um título à avaliação."); return; }
+  if (!t.questions.length){ toast("Adicione pelo menos uma pergunta."); return; }
+  if (!t.code) t.code = genCode();
+  while (state.tests[t.code] && state.tests[t.code].id !== t.id) t.code = genCode();
+  state.tests[t.code] = t;
+  persistAll();
+  document.getElementById("published-code").textContent = t.code;
+  document.getElementById("publish-result").style.display = "block";
+  document.getElementById("student-link-display").value = window.location.href.split("?")[0] + "?modo=aluno";
+  toast("Avaliação guardada!");
+});
+document.getElementById("copy-code-btn").addEventListener("click", function(){
+  copyToClipboard(document.getElementById("published-code").textContent);
+});
+document.getElementById("copy-student-link-btn").addEventListener("click", function(){
+  copyToClipboard(document.getElementById("student-link-display").value);
+});
+document.getElementById("download-test-btn").addEventListener("click", function(){
+  var t = state.editingTest;
+  downloadOrCopy(t.code + ".adn.json", JSON.stringify(t, null, 2));
+});
+
+function copyToClipboard(text){
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ toast("Copiado!"); }).catch(function(){ fallbackCopy(text); });
+  } else fallbackCopy(text);
+}
+function fallbackCopy(text){
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); toast("Copiado!"); }catch(e){ toast("Não foi possível copiar automaticamente."); }
+  document.body.removeChild(ta);
+}
+var __downloadsCap = null;
+async function getDownloads(){
+  if (__downloadsCap !== null) return __downloadsCap;
+  try{ __downloadsCap = (window.claude && window.claude.use) ? await window.claude.use("downloads") : null; }catch(e){ __downloadsCap = null; }
+  return __downloadsCap;
+}
+async function downloadOrCopy(filename, content){
+  var d = await getDownloads();
+  if (d){
+    try{ await d.save({filename: filename, data: content}); toast("Ficheiro guardado."); return; }catch(e){ /* fall through */ }
+  }
+  copyToClipboard(content);
+  toast("Download indisponível aqui — conteúdo copiado para a área de transferência.");
+}
+
+/* ---------- self-download: let anyone save a standalone copy of the ADN app ---------- */
+async function downloadAppCopy(){
+  try{
+    var html = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+    var d = await getDownloads();
+    if (d){
+      try{ await d.save({filename:"ADN.html", data:html}); toast("Aplicação descarregada."); return; }catch(e){ /* fall through */ }
+    }
+    toast("Download automático indisponível aqui. Use o menu do navegador (⋮) → \"Transferir página\" ou Ctrl/Cmd+S para guardar esta página.");
+  }catch(e){ toast("Não foi possível preparar o ficheiro."); }
+}
+document.getElementById("download-app-prof").addEventListener("click", downloadAppCopy);
+
+/* =========================================================================
+   QUESTION EDITOR
+   ========================================================================= */
+document.getElementById("add-question-btn").addEventListener("click", function(){ openQuestionEditor(-1); });
+document.getElementById("back-to-test-editor").addEventListener("click", function(){ showScreen("screen-test-editor"); });
+
+function blankQuestion(type){
+  return { id:uid("q"), type:type||"mc", text:"", options:["","",""], correctIndex:0, correctBool:true, points:2, image:null, table:null, chart:null };
+}
+function openQuestionEditor(index){
+  state.editingQuestionIndex = index;
+  state.editingQuestion = index >= 0 ? JSON.parse(JSON.stringify(state.editingTest.questions[index])) : blankQuestion("mc");
+  document.getElementById("delete-question-btn").style.display = index >= 0 ? "block" : "none";
+  setQType(state.editingQuestion.type);
+  document.getElementById("q-text").value = state.editingQuestion.text || "";
+  document.getElementById("q-points").value = state.editingQuestion.points || 2;
+  renderMcOptions();
+  if (state.editingQuestion.type === "vf"){
+    document.querySelector('input[name="vf-correct"][value="'+String(!!state.editingQuestion.correctBool)+'"]').checked = true;
+  }
+  renderQMediaPreview();
+  showScreen("screen-question-editor");
+}
+function setQType(type){
+  state.editingQuestion.type = type;
+  document.getElementById("qtype-mc").classList.toggle("active", type==="mc");
+  document.getElementById("qtype-vf").classList.toggle("active", type==="vf");
+  document.getElementById("mc-options-wrap").style.display = type==="mc" ? "block" : "none";
+  document.getElementById("vf-wrap").style.display = type==="vf" ? "block" : "none";
+}
+document.getElementById("qtype-mc").addEventListener("click", function(){ setQType("mc"); });
+document.getElementById("qtype-vf").addEventListener("click", function(){ setQType("vf"); });
+
+function renderMcOptions(){
+  var wrap = document.getElementById("mc-options");
+  var opts = state.editingQuestion.options;
+  wrap.innerHTML = opts.map(function(o,i){
+    return '<div class="opt-row"><input type="radio" name="mc-correct" value="'+i+'" '+(state.editingQuestion.correctIndex===i?"checked":"")+'>'+
+      '<input type="text" data-i="'+i+'" value="'+escapeHtml(o)+'" placeholder="Opção '+(i+1)+'">'+
+      (opts.length>2 ? '<button class="icon-btn" data-del="'+i+'" style="color:var(--danger);">✕</button>' : '')+
+      '</div>';
+  }).join("");
+  wrap.querySelectorAll('input[type=text]').forEach(function(inp){
+    inp.addEventListener("input", function(){ state.editingQuestion.options[+inp.getAttribute("data-i")] = inp.value; });
+  });
+  wrap.querySelectorAll('input[type=radio]').forEach(function(r){
+    r.addEventListener("change", function(){ state.editingQuestion.correctIndex = +r.value; });
+  });
+  wrap.querySelectorAll('[data-del]').forEach(function(b){
+    b.addEventListener("click", function(){
+      var i = +b.getAttribute("data-del");
+      state.editingQuestion.options.splice(i,1);
+      if (state.editingQuestion.correctIndex >= state.editingQuestion.options.length) state.editingQuestion.correctIndex = 0;
+      renderMcOptions();
+    });
+  });
+}
+document.getElementById("add-option-btn").addEventListener("click", function(){
+  if (state.editingQuestion.options.length >= 6){ toast("Máximo de 6 opções."); return; }
+  state.editingQuestion.options.push("");
+  renderMcOptions();
+});
+document.getElementById("q-text").addEventListener("input", function(){ state.editingQuestion.text = this.value; });
+document.getElementById("q-points").addEventListener("input", function(){ state.editingQuestion.points = +this.value || 1; });
+document.querySelectorAll('input[name="vf-correct"]').forEach(function(r){
+  r.addEventListener("change", function(){ state.editingQuestion.correctBool = (r.value === "true"); });
+});
+
+/* ---------- image / table / chart ---------- */
+document.getElementById("q-image-input").addEventListener("change", function(e){
+  var file = e.target.files[0]; if (!file) return;
+  var img = new Image();
+  var reader = new FileReader();
+  reader.onload = function(){
+    img.onload = function(){
+      var maxW = 720;
+      var scale = Math.min(1, maxW / img.width);
+      var canvas = document.createElement("canvas");
+      canvas.width = img.width*scale; canvas.height = img.height*scale;
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      state.editingQuestion.image = canvas.toDataURL("image/jpeg", 0.82);
+      renderQMediaPreview();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById("q-add-table-btn").addEventListener("click", function(){
+  var rows = prompt("Quantas linhas tem a tabela?", "2");
+  var cols = prompt("Quantas colunas tem a tabela?", "2");
+  rows = Math.max(1, Math.min(8, +rows||2)); cols = Math.max(1, Math.min(6, +cols||2));
+  var data = [];
+  for (var r=0;r<rows;r++){ var row=[]; for (var c=0;c<cols;c++){ row.push(""); } data.push(row); }
+  state.editingQuestion.table = data;
+  renderQMediaPreview();
+  toast("Tabela criada — toque nas células para editar.");
+});
+document.getElementById("q-add-chart-btn").addEventListener("click", function(){
+  state.editingQuestion.chart = { labels:["A","B","C"], values:[3,5,2] };
+  renderQMediaPreview();
+  toast("Gráfico de exemplo criado — edite os valores.");
+});
+function renderQMediaPreview(){
+  var wrap = document.getElementById("q-media-preview");
+  var q = state.editingQuestion;
+  var html = "";
+  if (q.image) html += '<div style="position:relative; margin-bottom:10px;"><img src="'+q.image+'"><button class="icon-btn" data-rm="image" style="position:absolute; top:6px; right:6px; color:var(--danger);">✕</button></div>';
+  if (q.table) html += '<div style="margin-bottom:10px;">'+renderEditableTable(q.table)+'<button class="btn btn-ghost btn-sm" data-rm="table" style="margin-top:6px; color:var(--danger);">Remover tabela</button></div>';
+  if (q.chart) html += '<div style="margin-bottom:10px;">'+renderChartEditor(q.chart)+'<button class="btn btn-ghost btn-sm" data-rm="chart" style="margin-top:6px; color:var(--danger);">Remover gráfico</button></div>';
+  wrap.innerHTML = html;
+  wrap.querySelectorAll("[data-rm]").forEach(function(b){
+    b.addEventListener("click", function(){ q[b.getAttribute("data-rm")] = null; renderQMediaPreview(); });
+  });
+  wrap.querySelectorAll("table.simple.editable td[contenteditable]").forEach(function(td){
+    td.addEventListener("input", function(){
+      var r = +td.getAttribute("data-r"), c = +td.getAttribute("data-c");
+      q.table[r][c] = td.textContent;
+    });
+  });
+  wrap.querySelectorAll(".chart-label-input").forEach(function(inp){
+    inp.addEventListener("input", function(){ q.chart.labels[+inp.getAttribute("data-i")] = inp.value; renderChartSvgOnly(); });
+  });
+  wrap.querySelectorAll(".chart-value-input").forEach(function(inp){
+    inp.addEventListener("input", function(){ q.chart.values[+inp.getAttribute("data-i")] = +inp.value || 0; renderChartSvgOnly(); });
+  });
+}
+function renderChartSvgOnly(){
+  var el = document.getElementById("chart-svg-live");
+  if (el) el.outerHTML = buildBarChartSvg(state.editingQuestion.chart);
+}
+function renderEditableTable(data){
+  var html = '<table class="simple editable"><tbody>';
+  data.forEach(function(row,r){
+    html += "<tr>" + row.map(function(cell,c){
+      return '<td contenteditable="true" data-r="'+r+'" data-c="'+c+'">'+escapeHtml(cell)+'</td>';
+    }).join("") + "</tr>";
+  });
+  html += "</tbody></table>";
+  return html;
+}
+function buildBarChartSvg(chart){
+  var w=280, h=140, pad=22;
+  var maxV = Math.max.apply(null, chart.values.concat([1]));
+  var barW = (w - pad*2) / chart.values.length - 10;
+  var bars = chart.values.map(function(v,i){
+    var bh = (v/maxV) * (h - pad*2);
+    var x = pad + i*((w-pad*2)/chart.values.length) + 5;
+    var y = h - pad - bh;
+    return '<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+bh+'" rx="3" fill="var(--accent)"/><text x="'+(x+barW/2)+'" y="'+(h-pad+13)+'" font-size="9" text-anchor="middle" fill="var(--muted)">'+escapeHtml(chart.labels[i]||"")+'</text>';
+  }).join("");
+  return '<svg id="chart-svg-live" viewBox="0 0 '+w+' '+h+'" style="width:100%; max-width:320px; height:auto;">'+bars+'<line x1="'+pad+'" y1="'+(h-pad)+'" x2="'+(w-pad)+'" y2="'+(h-pad)+'" stroke="var(--border)"/></svg>';
+}
+function renderChartEditor(chart){
+  var rows = chart.labels.map(function(l,i){
+    return '<div class="row" style="margin-bottom:5px;"><input type="text" class="chart-label-input" data-i="'+i+'" value="'+escapeHtml(l)+'" style="flex:1; padding:6px 8px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--ink); font-size:12.5px;">'+
+      '<input type="number" class="chart-value-input" data-i="'+i+'" value="'+chart.values[i]+'" style="width:64px; padding:6px 8px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--ink); font-size:12.5px;"></div>';
+  }).join("");
+  return buildBarChartSvg(chart) + '<div style="margin-top:8px;">' + rows + '</div>';
+}
+
+document.getElementById("save-question-btn").addEventListener("click", function(){
+  var q = state.editingQuestion;
+  if (!q.text.trim()){ toast("Escreva o enunciado da pergunta."); return; }
+  if (q.type === "mc"){
+    var opts = q.options.map(function(o){ return o.trim(); });
+    if (opts.some(function(o){ return !o; })){ toast("Preencha todas as opções."); return; }
+    q.options = opts;
+  }
+  if (state.editingQuestionIndex >= 0) state.editingTest.questions[state.editingQuestionIndex] = q;
+  else state.editingTest.questions.push(q);
+  renderQuestionsList();
+  showScreen("screen-test-editor");
+});
+document.getElementById("delete-question-btn").addEventListener("click", function(){
+  if (!confirm("Eliminar esta pergunta?")) return;
+  state.editingTest.questions.splice(state.editingQuestionIndex,1);
+  renderQuestionsList();
+  showScreen("screen-test-editor");
+});
+
+/* =========================================================================
+   PROFESSOR: TURMAS
+   ========================================================================= */
+function renderTurmasList(){
+  var wrap = document.getElementById("turmas-list");
+  var turmas = Object.values(state.turmas).sort(function(a,b){ return (a.name||"").localeCompare(b.name||""); });
+  if (!turmas.length){ wrap.innerHTML = emptyState("👥","Ainda sem turmas. Crie uma para pré-cadastrar os seus alunos."); return; }
+  wrap.innerHTML = '<div class="card">' + turmas.map(function(tu){
+    return '<div class="test-item"><div class="ti-main"><div class="ti-title">'+escapeHtml(tu.name)+'</div><div class="ti-meta">'+tu.students.length+' aluno(s)</div></div>'+
+      '<span class="pill accent" data-open="'+tu.id+'" style="cursor:pointer;">Abrir ›</span></div>';
+  }).join("") + '</div>';
+  wrap.querySelectorAll("[data-open]").forEach(function(el){
+    el.addEventListener("click", function(){ openTurmaDetail(state.turmas[el.getAttribute("data-open")]); });
+  });
+}
+document.getElementById("new-turma-btn").addEventListener("click", function(){
+  var t = { id: uid("turma"), name:"", students:[] };
+  openTurmaDetail(t, true);
+});
+document.getElementById("back-to-turmas").addEventListener("click", function(){ selectProfTab("turmas"); });
+function openTurmaDetail(turma, isNew){
+  state.editingTurma = JSON.parse(JSON.stringify(turma));
+  state.editingTurma._isNew = !!isNew;
+  document.getElementById("turma-name").value = state.editingTurma.name;
+  document.getElementById("turma-add-name").value = "";
+  document.getElementById("turma-add-id").value = "";
+  document.getElementById("turma-bulk").value = "";
+  renderTurmaStudents();
+  showScreen("screen-turma-detail");
+}
+document.getElementById("turma-name").addEventListener("input", function(){
+  state.editingTurma.name = this.value;
+  saveEditingTurma();
+});
+function saveEditingTurma(){
+  if (!state.editingTurma.name.trim()) return; // don't persist unnamed turmas yet
+  state.turmas[state.editingTurma.id] = JSON.parse(JSON.stringify(state.editingTurma));
+  delete state.turmas[state.editingTurma.id]._isNew;
+  persistAll();
+}
+function renderTurmaStudents(){
+  document.getElementById("turma-count-pill").textContent = state.editingTurma.students.length;
+  var wrap = document.getElementById("turma-students-list");
+  if (!state.editingTurma.students.length){ wrap.innerHTML = '<p class="muted small">Ainda sem alunos.</p>'; return; }
+  wrap.innerHTML = state.editingTurma.students.map(function(s,i){
+    return '<div class="test-item"><div class="ti-main"><div class="ti-title">'+escapeHtml(s.name)+'</div><div class="ti-meta">'+escapeHtml(s.idNumber)+'</div></div><button class="icon-btn" data-del="'+i+'" style="color:var(--danger);">✕</button></div>';
+  }).join("");
+  wrap.querySelectorAll("[data-del]").forEach(function(b){
+    b.addEventListener("click", function(){
+      state.editingTurma.students.splice(+b.getAttribute("data-del"),1);
+      saveEditingTurma();
+      renderTurmaStudents();
+    });
+  });
+}
+document.getElementById("turma-add-one-btn").addEventListener("click", function(){
+  var name = document.getElementById("turma-add-name").value.trim();
+  var idn = document.getElementById("turma-add-id").value.trim();
+  if (!name || !idn){ toast("Preencha nome e número do aluno."); return; }
+  if (!state.editingTurma.name.trim()){ toast("Dê primeiro um nome à turma."); return; }
+  state.editingTurma.students.push({name:name, idNumber:idn});
+  document.getElementById("turma-add-name").value = "";
+  document.getElementById("turma-add-id").value = "";
+  saveEditingTurma();
+  renderTurmaStudents();
+});
+document.getElementById("turma-add-bulk-btn").addEventListener("click", function(){
+  var raw = document.getElementById("turma-bulk").value.trim();
+  if (!raw){ return; }
+  if (!state.editingTurma.name.trim()){ toast("Dê primeiro um nome à turma."); return; }
+  var added = 0;
+  raw.split("\n").forEach(function(line){
+    var parts = line.split(",");
+    if (parts.length >= 2){
+      var name = parts[0].trim(), idn = parts.slice(1).join(",").trim();
+      if (name && idn){ state.editingTurma.students.push({name:name, idNumber:idn}); added++; }
+    }
+  });
+  document.getElementById("turma-bulk").value = "";
+  saveEditingTurma();
+  renderTurmaStudents();
+  toast(added + " aluno(s) adicionado(s).");
+});
+document.getElementById("delete-turma-btn").addEventListener("click", function(){
+  if (!confirm("Eliminar esta turma? As avaliações ligadas a ela deixam de ter turma associada.")) return;
+  delete state.turmas[state.editingTurma.id];
+  persistAll();
+  selectProfTab("turmas");
+});
+
+/* =========================================================================
+   PROFESSOR: CADERNETA
+   ========================================================================= */
+var cadWeekOffset = 0;
+function populateCadernetaTurmaFilter(){
+  var sel = document.getElementById("caderneta-turma-filter");
+  var current = sel.value;
+  sel.innerHTML = '<option value="">Todos os alunos</option>' +
+    Object.values(state.turmas).map(function(tu){ return '<option value="'+tu.id+'">'+escapeHtml(tu.name)+'</option>'; }).join("");
+  sel.value = current || "";
+}
+function renderCaderneta(){
+  var nav = document.getElementById("caderneta-week-nav");
+  var refDate = new Date(); refDate.setDate(refDate.getDate() + cadWeekOffset*7);
+  var wk = isoWeekKey(refDate.getTime());
+  nav.innerHTML = '<div class="row" style="align-items:center; justify-content:space-between;">'+
+    '<button class="icon-btn" id="cad-prev">‹</button><b style="font-family:var(--font-head);">'+wk+'</b><button class="icon-btn" id="cad-next">›</button></div>';
+  document.getElementById("cad-prev").addEventListener("click", function(){ cadWeekOffset--; renderCaderneta(); });
+  document.getElementById("cad-next").addEventListener("click", function(){ cadWeekOffset++; renderCaderneta(); });
+  populateCadernetaTurmaFilter();
+  document.getElementById("caderneta-turma-filter").onchange = function(){ renderCaderneta(); };
+  var turmaId = document.getElementById("caderneta-turma-filter").value;
+  var turma = turmaId ? state.turmas[turmaId] : null;
+
+  var wrap = document.getElementById("caderneta-table");
+  var missingWrap = document.getElementById("caderneta-missing");
+  missingWrap.innerHTML = "";
+  var studentKeys = Object.keys(state.caderneta);
+  if (turma){
+    var rosterIds = turma.students.map(function(s){ return s.idNumber.trim().toLowerCase(); });
+    studentKeys = studentKeys.filter(function(sk){
+      var idn = (state.caderneta[sk].idNumber||"").trim().toLowerCase();
+      return rosterIds.indexOf(idn) !== -1;
+    });
+  }
+  if (!studentKeys.length){ wrap.innerHTML = emptyState("📒", turma ? "Nenhum aluno desta turma tem resultados ainda." : "Ainda sem resultados importados."); }
+  else {
+    var rowsHtml = studentKeys.map(function(sk){
+      var st = state.caderneta[sk];
+      var weekEntries = (st.history||[]).filter(function(h){ return h.weekKey === wk; }).sort(function(a,b){return a.submittedAt-b.submittedAt;});
+      var cells = [0,1].map(function(i){
+        var e = weekEntries[i];
+        if (!e) return '<td class="muted">—</td>';
+        var flagged = e.violations && (e.violations.copy+e.violations.rightClick+e.violations.tabSwitch) > 0;
+        return '<td>'+fmtGrade(e.grade20!=null?e.grade20:toGrade20(e.pct))+'/20 <span class="muted small">('+escapeHtml(e.testTitle).slice(0,16)+'…)</span>'+(flagged?' <span title="Eventos suspeitos registados">⚠️</span>':'')+'</td>';
+      });
+      var extra = weekEntries.length > 2 ? ' <span class="pill warn">+'+(weekEntries.length-2)+' extra</span>' : '';
+      var avgAll = (st.history||[]).length ? Math.round(st.history.reduce(function(s,h){return s+h.pct;},0)/st.history.length) : 0;
+      return '<tr><td><b>'+escapeHtml(st.name||"—")+'</b><div class="muted small">'+escapeHtml(st.idNumber||"")+'</div></td>'+cells.join("")+'<td>'+avgAll+'%'+extra+'</td></tr>';
+    }).join("");
+    wrap.innerHTML = '<div class="card" style="overflow-x:auto;"><table class="simple"><thead><tr><th>Aluno</th><th>Avaliação 1</th><th>Avaliação 2</th><th>Média geral</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div>';
+  }
+
+  if (turma){
+    var presentIds = studentKeys.map(function(sk){ return (state.caderneta[sk].idNumber||"").trim().toLowerCase(); });
+    var missing = turma.students.filter(function(s){
+      var idn = s.idNumber.trim().toLowerCase();
+      var sk = idn+"|"+s.name.trim().toLowerCase();
+      var st = state.caderneta[sk];
+      var hasThisWeek = st && (st.history||[]).some(function(h){ return h.weekKey === wk; });
+      return !hasThisWeek;
+    });
+    if (missing.length){
+      missingWrap.innerHTML = '<div class="card" style="background:var(--danger-bg); border:none; margin-top:12px;"><p class="small" style="color:var(--danger); font-weight:600; margin:0 0 6px 0;">Sem avaliação esta semana ('+missing.length+')</p>' +
+        missing.map(function(s){ return '<div class="small" style="color:var(--danger);">• '+escapeHtml(s.name)+'</div>'; }).join("") + '</div>';
+    }
+  }
+}
+document.getElementById("export-caderneta-btn").addEventListener("click", function(){
+  var rows = [["Aluno","Número","Avaliação","Data e hora","Pontuação","Total","Nota /20","Eventos suspeitos"]];
+  Object.values(state.caderneta).forEach(function(st){
+    (st.history||[]).forEach(function(h){
+      var v = h.violations || {copy:0,rightClick:0,tabSwitch:0};
+      rows.push([st.name, st.idNumber, h.testTitle, fmtDateTime(h.submittedAt), h.score, h.total, fmtGrade(h.grade20!=null?h.grade20:toGrade20(h.pct)), (v.copy+v.rightClick+v.tabSwitch)]);
+    });
+  });
+  var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(","); }).join("\n");
+  downloadOrCopy("caderneta_adn.csv", csv);
+});
+document.getElementById("pdf-caderneta-btn").addEventListener("click", function(){
+  document.getElementById("screen-caderneta").classList.add("printing");
+  window.print();
+  setTimeout(function(){ document.getElementById("screen-caderneta").classList.remove("printing"); }, 500);
+});
+
+/* =========================================================================
+   PROFESSOR: ASSIDUIDADE — faltas e atrasos, com penalização na Pauta
+   ========================================================================= */
+function attKey(idNumber, name){ return (idNumber||"").trim().toLowerCase() + "|" + (name||"").trim().toLowerCase(); }
+function getAttendance(key){
+  if (!state.attendance[key]) state.attendance[key] = { faltas:0, atrasos:0, log:[] };
+  return state.attendance[key];
+}
+document.getElementById("pen-falta-input").addEventListener("input", function(){
+  state.settings.penFalta = Math.max(0, +this.value || 0); persistAll();
+});
+document.getElementById("pen-atraso-input").addEventListener("input", function(){
+  state.settings.penAtraso = Math.max(0, +this.value || 0); persistAll();
+});
+function populateAssidTurmaSelect(){
+  var sel = document.getElementById("assid-turma-select");
+  var current = sel.value;
+  sel.innerHTML = '<option value="">— Selecione uma turma —</option>' +
+    Object.values(state.turmas).map(function(tu){ return '<option value="'+tu.id+'">'+escapeHtml(tu.name)+'</option>'; }).join("");
+  sel.value = current || "";
+}
+function renderAssiduidade(){
+  document.getElementById("pen-falta-input").value = state.settings.penFalta;
+  document.getElementById("pen-atraso-input").value = state.settings.penAtraso;
+  populateAssidTurmaSelect();
+  document.getElementById("assid-turma-select").onchange = renderAssidTable;
+  renderAssidTable();
+}
+function renderAssidTable(){
+  var turmaId = document.getElementById("assid-turma-select").value;
+  var wrap = document.getElementById("assid-table");
+  if (!turmaId){ wrap.innerHTML = emptyState("📋","Selecione uma turma para marcar faltas e atrasos."); return; }
+  var turma = state.turmas[turmaId];
+  if (!turma.students.length){ wrap.innerHTML = emptyState("📋","Esta turma ainda não tem alunos."); return; }
+  var rowsHtml = turma.students.map(function(s){
+    var key = attKey(s.idNumber, s.name);
+    var att = getAttendance(key);
+    return '<tr><td><b>'+escapeHtml(s.name)+'</b><div class="muted small">'+escapeHtml(s.idNumber)+'</div></td>'+
+      '<td style="text-align:center;">'+att.faltas+'</td>'+
+      '<td style="text-align:center;">'+att.atrasos+'</td>'+
+      '<td><div class="row" style="gap:5px; flex-wrap:wrap;">'+
+        '<button class="btn btn-ghost btn-sm" data-act="falta+" data-k="'+key+'">+Falta</button>'+
+        '<button class="btn btn-ghost btn-sm" data-act="falta-" data-k="'+key+'">−</button>'+
+        '<button class="btn btn-ghost btn-sm" data-act="atraso+" data-k="'+key+'">+Atraso</button>'+
+        '<button class="btn btn-ghost btn-sm" data-act="atraso-" data-k="'+key+'">−</button>'+
+      '</div></td></tr>';
+  }).join("");
+  wrap.innerHTML = '<div class="card" style="overflow-x:auto;"><table class="simple"><thead><tr><th>Aluno</th><th>Faltas</th><th>Atrasos</th><th>Registar</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div>';
+  wrap.querySelectorAll("[data-act]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-k");
+      var att = getAttendance(key);
+      var act = btn.getAttribute("data-act");
+      var today = new Date().toISOString().slice(0,10);
+      if (act === "falta+"){ att.faltas++; att.log.push({date:today, type:"falta"}); }
+      if (act === "falta-"){ att.faltas = Math.max(0, att.faltas-1); }
+      if (act === "atraso+"){ att.atrasos++; att.log.push({date:today, type:"atraso"}); }
+      if (act === "atraso-"){ att.atrasos = Math.max(0, att.atrasos-1); }
+      persistAll();
+      renderAssidTable();
+    });
+  });
+}
+
+/* =========================================================================
+   PROFESSOR: MENSAGENS — caixa de entrada assíncrona (não é chat em tempo real)
+   ========================================================================= */
+function renderMensagens(){
+  var wrap = document.getElementById("mensagens-list");
+  var msgs = [];
+  Object.keys(state.caderneta).forEach(function(sk){
+    var st = state.caderneta[sk];
+    (st.history||[]).forEach(function(h){
+      if (h.studentMessage && h.studentMessage.trim()){
+        msgs.push({ studentName: st.name, photo: st.photo||null, testTitle: h.testTitle, submittedAt: h.submittedAt, message: h.studentMessage });
+      }
+    });
+  });
+  if (!msgs.length){ wrap.innerHTML = emptyState("💬","Ainda não recebeu mensagens dos alunos."); return; }
+  msgs.sort(function(a,b){ return b.submittedAt-a.submittedAt; });
+  wrap.innerHTML = msgs.map(function(m){
+    var avatar = m.photo ? '<img src="'+m.photo+'" style="width:30px;height:30px;border-radius:50%;object-fit:cover;margin-right:8px;vertical-align:middle;">' : "";
+    return '<div class="card" style="margin-bottom:10px;"><p style="margin:0 0 4px 0; font-size:13.5px;">'+avatar+'<b>'+escapeHtml(m.studentName)+'</b> <span class="muted small">· '+escapeHtml(m.testTitle)+' · '+fmtDateTime(m.submittedAt)+'</span></p>'+
+      '<p style="margin:0; font-size:14px;">'+escapeHtml(m.message)+'</p></div>';
+  }).join("");
+}
+
+/* =========================================================================
+   PROFESSOR: GRELHA DE OBSERVAÇÃO — Jogos para o Desenvolvimento Motor
+   ========================================================================= */
+var GRELHA_CRITERIA = [
+  { label:"Título do jogo", desc:"O título é criativo e adequado ao jogo?", max:0.5 },
+  { label:"Descrição do jogo", desc:"A descrição é clara, detalhada e fácil de entender?", max:1 },
+  { label:"Regras", desc:"As regras são completas e permitem que o jogo seja jogado de forma organizada?", max:0.5 },
+  { label:"Critério de vitória", desc:"O critério de vitória está bem definido e é fácil de entender?", max:0.5 },
+  { label:"Material Necessário", desc:"Todos os materiais são listados corretamente e são adequados para o jogo?", max:1 },
+  { label:"Objetivo do jogo", desc:"O jogo contribui no desenvolvimento das capacidades motoras e físicas descritas?", max:3 },
+  { label:"Duração do jogo", desc:"A duração do jogo é adequada para a faixa etária e o objetivo proposto?", max:0.5 },
+  { label:"Clareza e Organização do Trabalho", desc:"O trabalho é bem estruturado e organizado?", max:2 },
+  { label:"Apresentação Oral", desc:"A apresentação foi clara, objetiva e envolvente para o público?", max:4 },
+  { label:"Demonstração do Jogo", desc:"A demonstração do jogo foi eficaz para ilustrar o funcionamento e objetivos do jogo?", max:3 },
+  { label:"Criatividade e Originalidade", desc:"O estudante demonstrou criatividade na escolha dos jogos e no modo de apresentação?", max:4 }
+];
+var grelhaEditingKey = null;
+function populateGrelhaTurmaSelect(){
+  var sel = document.getElementById("grelha-turma-select");
+  var current = sel.value;
+  sel.innerHTML = '<option value="">— Selecione uma turma —</option>' +
+    Object.values(state.turmas).map(function(tu){ return '<option value="'+tu.id+'">'+escapeHtml(tu.name)+'</option>'; }).join("");
+  sel.value = current || "";
+}
+function renderGrelhaList(){
+  populateGrelhaTurmaSelect();
+  document.getElementById("grelha-turma-select").onchange = renderGrelhaStudentsList;
+  renderGrelhaStudentsList();
+}
+function renderGrelhaStudentsList(){
+  var turmaId = document.getElementById("grelha-turma-select").value;
+  var wrap = document.getElementById("grelha-students-list");
+  if (!turmaId){ wrap.innerHTML = emptyState("🎯","Selecione uma turma para avaliar a Grelha de Observação."); return; }
+  var turma = state.turmas[turmaId];
+  if (!turma.students.length){ wrap.innerHTML = emptyState("🎯","Esta turma ainda não tem alunos."); return; }
+  wrap.innerHTML = '<div class="card">' + turma.students.map(function(s){
+    var key = attKey(s.idNumber, s.name);
+    var g = state.grelhas[key];
+    return '<div class="test-item" data-open="'+key+'" style="cursor:pointer;"><div class="ti-main"><div class="ti-title">'+escapeHtml(s.name)+'</div><div class="ti-meta">'+(g ? ("Jogo: "+escapeHtml(g.jogoTitulo||"—")) : "Ainda não avaliado")+'</div></div>'+
+      (g ? '<span class="grade-badge '+(g.total<10?"low":(g.total>=14?"high":""))+'" style="font-size:14px;">'+fmtGrade(g.total)+'/20</span>' : '<span class="pill">Avaliar ›</span>')+'</div>';
+  }).join("") + '</div>';
+  wrap.querySelectorAll("[data-open]").forEach(function(el){
+    el.addEventListener("click", function(){ openGrelhaDetail(el.getAttribute("data-open"), turma); });
+  });
+}
+document.getElementById("back-to-grelha").addEventListener("click", function(){ selectProfTab("grelha"); });
+function openGrelhaDetail(key, turma){
+  grelhaEditingKey = key;
+  var student = turma.students.filter(function(s){ return attKey(s.idNumber,s.name)===key; })[0];
+  document.getElementById("grelha-student-name").textContent = student ? student.name : "";
+  document.getElementById("grelha-student-meta").textContent = (student ? student.idNumber : "") + " · " + turma.name;
+  var existing = state.grelhas[key] || { jogoTitulo:"", scores: GRELHA_CRITERIA.map(function(){ return 0; }) };
+  document.getElementById("grelha-jogo-titulo").value = existing.jogoTitulo || "";
+  var list = document.getElementById("grelha-criteria-list");
+  list.innerHTML = GRELHA_CRITERIA.map(function(c,i){
+    return '<div class="card" style="padding:13px; margin-bottom:8px;">'+
+      '<div class="row" style="justify-content:space-between; align-items:baseline;"><b style="font-size:14px;">'+(i+1)+'. '+escapeHtml(c.label)+'</b><span class="pill small">0–'+c.max+'</span></div>'+
+      '<p class="small muted" style="margin:4px 0 8px 0;">'+escapeHtml(c.desc)+'</p>'+
+      '<input type="number" class="grelha-score-input" data-i="'+i+'" min="0" max="'+c.max+'" step="0.1" value="'+(existing.scores[i]||0)+'" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--ink);">'+
+    '</div>';
+  }).join("");
+  list.querySelectorAll(".grelha-score-input").forEach(function(inp){
+    inp.addEventListener("input", updateGrelhaTotal);
+  });
+  updateGrelhaTotal();
+  showScreen("screen-grelha-detail");
+}
+function updateGrelhaTotal(){
+  var total = 0;
+  document.querySelectorAll(".grelha-score-input").forEach(function(inp,i){
+    var max = GRELHA_CRITERIA[i].max;
+    var v = Math.min(Math.max(0, +inp.value || 0), max);
+    inp.value = v;
+    total += v;
+  });
+  document.getElementById("grelha-total-display").textContent = fmtGrade(total) + " / 20";
+}
+document.getElementById("grelha-save-btn").addEventListener("click", function(){
+  var scores = Array.prototype.map.call(document.querySelectorAll(".grelha-score-input"), function(inp){ return +inp.value || 0; });
+  var total = scores.reduce(function(s,v){ return s+v; }, 0);
+  state.grelhas[grelhaEditingKey] = { jogoTitulo: document.getElementById("grelha-jogo-titulo").value.trim(), scores: scores, total: total, updatedAt: Date.now() };
+  persistAll();
+  toast("Avaliação da grelha guardada — nota: " + fmtGrade(total) + "/20.");
+  selectProfTab("grelha");
+});
+
+/* =========================================================================
+   PROFESSOR: PAUTA — soma das notas ÷ nº de avaliações, escala 0–20,
+   com penalização automática por faltas/atrasos (mensal ou geral)
+   ========================================================================= */
+var pautaMode = "geral"; // "geral" | "mensal"
+var pautaMonth = new Date();
+function populatePautaTurmaFilter(){
+  var sel = document.getElementById("pauta-turma-filter");
+  var current = sel.value;
+  sel.innerHTML = '<option value="">Todos os alunos</option>' +
+    Object.values(state.turmas).map(function(tu){ return '<option value="'+tu.id+'">'+escapeHtml(tu.name)+'</option>'; }).join("");
+  sel.value = current || "";
+}
+document.getElementById("pauta-mode-geral").addEventListener("click", function(){ pautaMode = "geral"; renderPauta(); });
+document.getElementById("pauta-mode-mensal").addEventListener("click", function(){ pautaMode = "mensal"; renderPauta(); });
+function renderPauta(){
+  document.getElementById("pauta-mode-geral").classList.toggle("accent", pautaMode==="geral");
+  document.getElementById("pauta-mode-mensal").classList.toggle("accent", pautaMode==="mensal");
+  document.getElementById("pauta-month-nav").style.display = pautaMode==="mensal" ? "block" : "none";
+  if (pautaMode === "mensal"){
+    document.getElementById("pauta-month-nav").innerHTML = '<div class="row" style="align-items:center; justify-content:space-between;">'+
+      '<button class="icon-btn" id="pauta-month-prev">‹</button><b style="font-family:var(--font-head);">'+MONTHS[pautaMonth.getMonth()]+' '+pautaMonth.getFullYear()+'</b><button class="icon-btn" id="pauta-month-next">›</button></div>';
+    document.getElementById("pauta-month-prev").addEventListener("click", function(){ pautaMonth.setMonth(pautaMonth.getMonth()-1); renderPauta(); });
+    document.getElementById("pauta-month-next").addEventListener("click", function(){ pautaMonth.setMonth(pautaMonth.getMonth()+1); renderPauta(); });
+  }
+  document.getElementById("pauta-title").innerHTML = (pautaMode==="mensal" ? ("Pauta mensal — "+MONTHS[pautaMonth.getMonth()]+" "+pautaMonth.getFullYear()) : "Pauta geral") + ' <span class="pill small">notas de 0 a 20 valores</span>';
+
+  populatePautaTurmaFilter();
+  document.getElementById("pauta-turma-filter").onchange = function(){ renderPauta(); };
+  var turmaId = document.getElementById("pauta-turma-filter").value;
+  var turma = turmaId ? state.turmas[turmaId] : null;
+
+  var studentKeys = Object.keys(state.caderneta);
+  if (turma){
+    var rosterIds = turma.students.map(function(s){ return s.idNumber.trim().toLowerCase(); });
+    studentKeys = studentKeys.filter(function(sk){ return rosterIds.indexOf((state.caderneta[sk].idNumber||"").trim().toLowerCase()) !== -1; });
+  }
+  var wrap = document.getElementById("pauta-table");
+  if (!studentKeys.length){ wrap.innerHTML = emptyState("🎓","Sem resultados para gerar a pauta."); return; }
+
+  var rows = studentKeys.map(function(sk){
+    var st = state.caderneta[sk];
+    var hist = (st.history||[]).slice().sort(function(a,b){ return a.submittedAt-b.submittedAt; });
+    if (pautaMode === "mensal"){
+      hist = hist.filter(function(h){
+        var d = new Date(h.submittedAt);
+        return d.getFullYear()===pautaMonth.getFullYear() && d.getMonth()===pautaMonth.getMonth();
+      });
+    }
+    var grades = hist.map(function(h){ return h.grade20!=null ? h.grade20 : toGrade20(h.pct); });
+    var sum = grades.reduce(function(s,g){ return s+g; }, 0);
+    var media = grades.length ? sum/grades.length : 0;
+    var attK = attKey(st.idNumber, st.name);
+    var att = state.attendance[attK] || {faltas:0, atrasos:0};
+    var penalty = att.faltas*state.settings.penFalta + att.atrasos*state.settings.penAtraso;
+    var notaAvaliacoes = Math.max(0, media - penalty);
+    var grelhaTotal = (state.grelhas[attK] && typeof state.grelhas[attK].total === "number") ? state.grelhas[attK].total : 0;
+    var combinado = notaAvaliacoes + grelhaTotal;
+    return { key: attK, name: st.name, idNumber: st.idNumber, photo: st.photo||null, grades: grades, sum: sum, count: grades.length, media: media, faltas: att.faltas, atrasos: att.atrasos, notaAvaliacoes: notaAvaliacoes, grelhaTotal: grelhaTotal, combinado: combinado };
+  }).sort(function(a,b){ return (a.name||"").localeCompare(b.name||""); });
+
+  var rowsHtml = rows.map(function(r){
+    var badges = r.grades.map(function(g){
+      var cls = g < 10 ? "low" : (g >= 14 ? "high" : "");
+      return '<span class="grade-badge '+cls+'">'+fmtGrade(g)+'</span>';
+    }).join("");
+    var finalCls = r.notaAvaliacoes < 10 ? "low" : (r.notaAvaliacoes >= 14 ? "high" : "");
+    var avatar = r.photo ? '<img src="'+r.photo+'" style="width:26px;height:26px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">' : "";
+    return '<tr><td>'+avatar+'<b>'+escapeHtml(r.name||"—")+'</b><div class="muted small">'+escapeHtml(r.idNumber||"")+'</div></td>'+
+      '<td>'+(badges||'<span class="muted small">—</span>')+'</td>'+
+      '<td>'+r.count+'</td><td>'+fmtGrade(r.media)+'</td>'+
+      '<td>'+r.faltas+' / '+r.atrasos+'</td>'+
+      '<td><span class="grade-badge '+finalCls+'" style="font-size:15px; min-width:44px;">'+fmtGrade(r.notaAvaliacoes)+'</span></td>'+
+      '<td><input type="number" class="pauta-grelha-input" data-key="'+r.key+'" value="'+r.grelhaTotal+'" min="0" max="20" step="0.5" style="width:60px; padding:6px 7px; border-radius:7px; border:1px solid var(--border); background:var(--bg); color:var(--ink); font-size:13px;"></td>'+
+      '<td><span class="grade-badge accent" style="font-size:15px; min-width:44px;">'+fmtGrade(r.combinado)+'</span></td></tr>';
+  }).join("");
+
+  wrap.innerHTML = '<div class="card" style="overflow-x:auto;"><table class="simple"><thead><tr><th>Aluno</th><th>Notas</th><th>Nº</th><th>Média</th><th>F / A</th><th>Nota das avaliações</th><th>Grelha (0–20)</th><th>Combinado</th></tr></thead><tbody>'+rowsHtml+'</tbody></table>'+
+    '<p class="small muted" style="margin-top:8px;">Combinado = nota das avaliações (já com penalizações) + nota da grelha de observação, somadas conforme pedido. Pode inserir/editar a nota da grelha diretamente aqui.</p></div>';
+  wrap.querySelectorAll(".pauta-grelha-input").forEach(function(inp){
+    inp.addEventListener("change", function(){
+      var key = inp.getAttribute("data-key");
+      var v = Math.min(20, Math.max(0, +inp.value || 0));
+      inp.value = v;
+      if (!state.grelhas[key]) state.grelhas[key] = { jogoTitulo:"", scores: GRELHA_CRITERIA.map(function(){return 0;}), total:0, updatedAt:Date.now() };
+      state.grelhas[key].total = v;
+      state.grelhas[key].updatedAt = Date.now();
+      persistAll();
+      renderPauta();
+    });
+  });
+  state._pautaRows = rows; // cached for export
+}
+document.getElementById("export-pauta-btn").addEventListener("click", function(){
+  var rows = state._pautaRows || [];
+  var out = [["Aluno","Número","Notas (0-20)","Nº avaliações","Média","Faltas","Atrasos","Nota das avaliações","Grelha (0-20)","Combinado"]];
+  rows.forEach(function(r){
+    out.push([r.name, r.idNumber, r.grades.map(fmtGrade).join(" | "), r.count, fmtGrade(r.media), r.faltas, r.atrasos, fmtGrade(r.notaAvaliacoes), fmtGrade(r.grelhaTotal), fmtGrade(r.combinado)]);
+  });
+  var csv = out.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(","); }).join("\n");
+  downloadOrCopy("pauta_adn.csv", csv);
+});
+document.getElementById("print-pauta-btn").addEventListener("click", function(){
+  document.getElementById("screen-pauta").classList.add("printing");
+  window.print();
+  setTimeout(function(){ document.getElementById("screen-pauta").classList.remove("printing"); }, 500);
+});
+
+/* =========================================================================
+   PROFESSOR: CALENDÁRIO
+   ========================================================================= */
+var DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+var MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+document.getElementById("cal-prev").addEventListener("click", function(){ state.calMonth.setMonth(state.calMonth.getMonth()-1); renderCalendar(); });
+document.getElementById("cal-next").addEventListener("click", function(){ state.calMonth.setMonth(state.calMonth.getMonth()+1); renderCalendar(); });
+function renderCalendar(){
+  var m = state.calMonth;
+  document.getElementById("cal-month-label").textContent = MONTHS[m.getMonth()] + " " + m.getFullYear();
+  var first = new Date(m.getFullYear(), m.getMonth(), 1);
+  var startPad = (first.getDay());
+  var daysInMonth = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate();
+  var entries = allHistoryEntries();
+  var byDay = {};
+  entries.forEach(function(e){
+    var d = new Date(e.submittedAt);
+    if (d.getFullYear()===m.getFullYear() && d.getMonth()===m.getMonth()){
+      var key = d.getDate();
+      (byDay[key] = byDay[key]||[]).push(e);
+    }
+  });
+  var today = new Date();
+  var html = DOW.map(function(d){ return '<div class="cal-dow">'+d+'</div>'; }).join("");
+  for (var i=0;i<startPad;i++) html += '<div class="cal-day pad"></div>';
+  for (var day=1; day<=daysInMonth; day++){
+    var isToday = today.getFullYear()===m.getFullYear() && today.getMonth()===m.getMonth() && today.getDate()===day;
+    var has = byDay[day];
+    html += '<div class="cal-day '+(isToday?"today ":"")+(has?"has-events":"")+'" data-day="'+day+'">'+day+(has?'<span class="dot"></span>':'')+'</div>';
+  }
+  document.getElementById("cal-grid").innerHTML = html;
+  document.querySelectorAll(".cal-day[data-day]").forEach(function(el){
+    el.addEventListener("click", function(){
+      var day = +el.getAttribute("data-day");
+      var list = byDay[day] || [];
+      var detail = document.getElementById("cal-day-detail");
+      if (!list.length){ detail.innerHTML = '<p class="muted small">Sem avaliações neste dia.</p>'; return; }
+      detail.innerHTML = list.map(function(e){
+        return '<div class="test-item"><div class="ti-main"><div class="ti-title">'+escapeHtml(e.studentName)+'</div><div class="ti-meta">'+escapeHtml(e.testTitle)+' · '+fmtDateTime(e.submittedAt)+'</div></div><span class="pill accent">'+fmtGrade(e.grade20!=null?e.grade20:toGrade20(e.pct))+'/20</span></div>';
+      }).join("");
+    });
+  });
+}
+
+/* =========================================================================
+   PROFESSOR: EVOLUÇÃO
+   ========================================================================= */
+function renderEvolucao(){
+  var sel = document.getElementById("evo-student-select");
+  var students = Object.keys(state.caderneta);
+  if (!students.length){
+    sel.innerHTML = "";
+    document.getElementById("evo-chart-card").innerHTML = emptyState("📈","Sem dados de alunos ainda.");
+    document.getElementById("evo-history-list").innerHTML = "";
+    return;
+  }
+  sel.innerHTML = students.map(function(sk){ return '<option value="'+sk+'">'+escapeHtml(state.caderneta[sk].name||sk)+'</option>'; }).join("");
+  sel.onchange = function(){ renderEvoForStudent(sel.value); };
+  renderEvoForStudent(sel.value);
+}
+function renderEvoForStudent(sk){
+  var st = state.caderneta[sk];
+  var chartCard = document.getElementById("evo-chart-card");
+  var hist = (st.history||[]).slice().sort(function(a,b){ return a.submittedAt-b.submittedAt; });
+  if (!hist.length){ chartCard.innerHTML = emptyState("📈","Sem histórico."); document.getElementById("evo-history-list").innerHTML=""; return; }
+  var grades = hist.map(function(e){ return e.grade20!=null ? e.grade20 : toGrade20(e.pct); });
+  var w=680,h=150,pad=26;
+  var pts = hist.map(function(e,i){
+    var x = pad + (hist.length>1 ? i*((w-pad*2)/(hist.length-1)) : (w-pad*2)/2);
+    var y = h - pad - (grades[i]/20)*(h-pad*2);
+    return {x:x,y:y};
+  });
+  var path = pts.map(function(p,i){ return (i===0?"M":"L")+p.x.toFixed(1)+","+p.y.toFixed(1); }).join(" ");
+  var dots = pts.map(function(p){ return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="var(--accent)"/>'; }).join("");
+  var avg = grades.reduce(function(s,g){return s+g;},0)/grades.length;
+  var trend = grades.length>1 ? (grades[grades.length-1] - grades[0]) : 0;
+  chartCard.innerHTML = '<div class="row wrap" style="margin-bottom:10px; gap:16px;">'+
+    '<div><div class="stat-num" style="font-size:20px;">'+fmtGrade(avg)+'</div><div class="stat-label">Média /20</div></div>'+
+    '<div><div class="stat-num" style="font-size:20px; color:'+(trend>=0?"var(--success)":"var(--danger)")+';">'+(trend>=0?"+":"")+fmtGrade(trend)+'</div><div class="stat-label">Evolução</div></div>'+
+    '<div><div class="stat-num" style="font-size:20px;">'+hist.length+'</div><div class="stat-label">Avaliações</div></div>'+
+    '</div><svg class="evo-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><path d="'+path+'" fill="none" stroke="var(--accent)" stroke-width="2.5"/>'+dots+'<line x1="'+pad+'" y1="'+(h-pad)+'" x2="'+(w-pad)+'" y2="'+(h-pad)+'" stroke="var(--border)"/></svg>';
+
+  document.getElementById("evo-history-list").innerHTML = hist.slice().reverse().map(function(e){
+    var v = e.violations||{copy:0,rightClick:0,tabSwitch:0};
+    var flagged = (v.copy+v.rightClick+v.tabSwitch) > 0;
+    return '<div class="test-item"><div class="ti-main"><div class="ti-title">'+escapeHtml(e.testTitle)+'</div><div class="ti-meta">'+fmtDateTime(e.submittedAt)+(flagged?' · ⚠️ eventos suspeitos':'')+'</div></div><span class="pill accent">'+fmtGrade(e.grade20!=null?e.grade20:toGrade20(e.pct))+'/20</span></div>';
+  }).join("");
+}
+
+/* =========================================================================
+   ALUNO FLOW
+   ========================================================================= */
+function resetAlunoFlow(){
+  document.getElementById("timer-wrap").style.display = "none";
+  document.getElementById("aluno-header-sub").textContent = "Área do Aluno";
+  var backBtn = document.getElementById("back-to-prof-link");
+  var hasProfSetup = !!(getProfProfile().password);
+  backBtn.style.display = hasProfSetup ? "block" : "none";
+  showScreen("screen-aluno-entrar");
+}
+document.getElementById("back-to-prof-link").addEventListener("click", function(){
+  state.profUnlocked = false;
+  setRole("professor");
+});
+document.getElementById("aluno-code-submit").addEventListener("click", function(){
+  var code = document.getElementById("aluno-code-input").value.trim().toUpperCase();
+  var test = state.tests[code];
+  if (!test){ toast("Código não encontrado. Verifique com o professor."); return; }
+  beginAlunoIdentification(test);
+});
+document.getElementById("aluno-file-input").addEventListener("change", function(e){
+  var file = e.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var test = JSON.parse(reader.result);
+      if (!test.questions) throw new Error("bad");
+      state.tests[test.code] = test; persistAll();
+      beginAlunoIdentification(test);
+    }catch(err){ toast("Ficheiro de avaliação inválido."); }
+  };
+  reader.readAsText(file);
+});
+function beginAlunoIdentification(test){
+  state.exam = { test: test, studentName:"", studentIdNumber:"", studentPhoto:null, timedOut:false };
+  document.getElementById("aluno-id-test-title").textContent = test.title;
+  document.getElementById("aluno-id-test-meta").textContent = (test.subject?test.subject+" · ":"") + test.questions.length + " perguntas · " + test.timerMinutes + " minutos · nota de 0 a 20 valores";
+  var msgBox = document.getElementById("aluno-id-message");
+  if (test.messageToStudents && test.messageToStudents.trim()){
+    msgBox.style.display = "block";
+    msgBox.innerHTML = "💬 " + escapeHtml(test.messageToStudents);
+  } else {
+    msgBox.style.display = "none";
+  }
+  document.getElementById("aluno-start-exam-btn").disabled = false;
+  document.getElementById("aluno-start-exam-btn").textContent = "Iniciar avaliação";
+  document.getElementById("aluno-name").value = "";
+  document.getElementById("aluno-idnum").value = "";
+  document.getElementById("aluno-photo-preview").innerHTML = "🙂";
+
+  // O cronómetro começa a contar assim que a avaliação é aberta, não apenas quando o exame começa.
+  var clockKey = "adn_clock_" + test.code;
+  var stored = safeGet(clockKey, null);
+  var now = Date.now();
+  if (stored && stored > now){
+    state.exam.endAt = stored;
+  } else {
+    state.exam.endAt = now + test.timerMinutes*60000;
+    safeSet(clockKey, state.exam.endAt);
+  }
+  document.getElementById("aluno-header-sub").textContent = test.title;
+  document.getElementById("timer-wrap").style.display = "block";
+  document.getElementById("q-progress-label").textContent = "";
+  document.getElementById("lanes").innerHTML = "";
+  clearInterval(examTimerInterval);
+  examTimerInterval = setInterval(tickTimer, 500);
+  tickTimer();
+  showScreen("screen-aluno-id");
+}
+document.getElementById("aluno-photo-input").addEventListener("change", function(e){
+  var file = e.target.files[0]; if (!file) return;
+  var img = new Image(); var reader = new FileReader();
+  reader.onload = function(){
+    img.onload = function(){
+      var size = 160, canvas = document.createElement("canvas");
+      canvas.width = size; canvas.height = size;
+      var ctx = canvas.getContext("2d");
+      var scale = Math.max(size/img.width, size/img.height);
+      var sw = size/scale, sh = size/scale;
+      var sx = (img.width-sw)/2, sy = (img.height-sh)/2;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+      var dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+      state.exam.studentPhoto = dataUrl;
+      document.getElementById("aluno-photo-preview").innerHTML = '<img src="'+dataUrl+'" style="width:100%; height:100%; object-fit:cover;">';
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById("aluno-start-exam-btn").addEventListener("click", function(){
+  if (state.exam.timedOut) return;
+  var name = document.getElementById("aluno-name").value.trim();
+  var idnum = document.getElementById("aluno-idnum").value.trim();
+  if (!name || !idnum){ toast("Nome e número de identificação são obrigatórios."); return; }
+  state.exam.studentName = name;
+  state.exam.studentIdNumber = idnum;
+  startExam();
+});
+
+var examTimerInterval = null;
+function startExam(){
+  var test = state.exam.test;
+  var seed = test.code + "|" + state.exam.studentIdNumber;
+  var order = test.shuffle !== false ? seededShuffle(test.questions.map(function(q,i){return i;}), seed) : test.questions.map(function(q,i){return i;});
+  var questions = order.map(function(i){
+    var q = JSON.parse(JSON.stringify(test.questions[i]));
+    if (q.type === "mc" && test.shuffle !== false){
+      var idxs = seededShuffle(q.options.map(function(o,oi){return oi;}), seed+"|"+q.id);
+      var newOptions = idxs.map(function(oi){ return q.options[oi]; });
+      var newCorrect = idxs.indexOf(q.correctIndex);
+      q.options = newOptions; q.correctIndex = newCorrect;
+    }
+    return q;
+  });
+  state.exam.questions = questions;
+  state.exam.answers = new Array(questions.length).fill(null);
+  state.exam.current = 0;
+  state.exam.violations = {copy:0, rightClick:0, tabSwitch:0};
+  // endAt was already set the moment the student opened the assessment (see beginAlunoIdentification).
+
+  buildExamLanes();
+  attachAntiCopyMonitoring();
+  showScreen("screen-exam");
+  document.getElementById("exam-nav").style.display = "flex";
+  renderExamQuestion();
+  tickTimer();
+}
+function buildExamLanes(){
+  var lanes = document.getElementById("lanes");
+  lanes.innerHTML = "";
+  state.exam.questions.forEach(function(){ var d=document.createElement("div"); d.className="lane"; lanes.appendChild(d); });
+}
+function tickTimer(){
+  var remaining = Math.max(0, state.exam.endAt - Date.now());
+  var mins = Math.floor(remaining/60000), secs = Math.floor((remaining%60000)/1000);
+  var badge = document.getElementById("timer-badge");
+  badge.textContent = "⏱ " + String(mins).padStart(2,"0") + ":" + String(secs).padStart(2,"0");
+  badge.classList.toggle("low", remaining < 60000);
+  if (remaining <= 0){
+    clearInterval(examTimerInterval);
+    if (state.exam.questions){ finishExam(); }
+    else { lockIdentificationTimeout(); }
+  }
+}
+function lockIdentificationTimeout(){
+  if (!state.exam) return;
+  state.exam.timedOut = true;
+  document.getElementById("aluno-start-exam-btn").disabled = true;
+  document.getElementById("aluno-start-exam-btn").textContent = "Tempo esgotado";
+  toast("⏱ O tempo desta avaliação esgotou-se antes de a iniciar. Peça um novo código ao professor.");
+}
+function attachAntiCopyMonitoring(){
+  document.removeEventListener("copy", onCopyEvent);
+  document.removeEventListener("contextmenu", onContextMenuEvent);
+  document.removeEventListener("visibilitychange", onVisibilityEvent);
+  document.addEventListener("copy", onCopyEvent);
+  document.addEventListener("contextmenu", onContextMenuEvent);
+  document.addEventListener("visibilitychange", onVisibilityEvent);
+}
+function detachAntiCopyMonitoring(){
+  document.removeEventListener("copy", onCopyEvent);
+  document.removeEventListener("contextmenu", onContextMenuEvent);
+  document.removeEventListener("visibilitychange", onVisibilityEvent);
+}
+function onCopyEvent(e){ if (!state.exam || document.getElementById("screen-exam").classList.contains("active")===false) return; e.preventDefault(); state.exam.violations.copy++; toast("⚠ Tentativa de cópia registada."); }
+function onContextMenuEvent(e){ if (!state.exam) return; if (!document.getElementById("screen-exam").classList.contains("active")) return; e.preventDefault(); state.exam.violations.rightClick++; toast("⚠ Clique direito registado."); }
+function onVisibilityEvent(){ if (!state.exam) return; if (document.hidden && document.getElementById("screen-exam").classList.contains("active")) state.exam.violations.tabSwitch++; }
+
+function renderExamQuestion(){
+  var ex = state.exam, q = ex.questions[ex.current];
+  document.getElementById("q-progress-label").textContent = "Questão " + (ex.current+1) + " de " + ex.questions.length;
+  document.getElementById("exam-q-points").textContent = q.points + " valor(es)";
+  document.getElementById("exam-q-text").textContent = q.text;
+  var media = "";
+  if (q.image) media += '<img src="'+q.image+'" style="max-width:100%; border-radius:8px; border:1px solid var(--border); margin-bottom:10px;">';
+  if (q.table) media += renderStaticTable(q.table);
+  if (q.chart) media += buildBarChartSvg(q.chart);
+  document.getElementById("exam-q-media").innerHTML = media;
+
+  var optsWrap = document.getElementById("exam-q-options");
+  var letters = ["a","b","c","d","e","f"];
+  if (q.type === "mc"){
+    optsWrap.innerHTML = q.options.map(function(o,i){
+      var sel = ex.answers[ex.current] === i;
+      return '<button type="button" class="opt exam-userselect-off '+(sel?"selected":"")+'" data-i="'+i+'"><span class="letter">'+letters[i]+'</span><span>'+escapeHtml(o)+'</span></button>';
+    }).join("");
+  } else {
+    optsWrap.innerHTML = [true,false].map(function(v,i){
+      var sel = ex.answers[ex.current] === v;
+      return '<button type="button" class="opt exam-userselect-off '+(sel?"selected":"")+'" data-v="'+v+'"><span class="letter">'+(v?"V":"F")+'</span><span>'+(v?"Verdadeiro":"Falso")+'</span></button>';
+    }).join("");
+  }
+  optsWrap.querySelectorAll(".opt").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      ex.answers[ex.current] = q.type==="mc" ? +btn.getAttribute("data-i") : (btn.getAttribute("data-v")==="true");
+      renderExamQuestion();
+    });
+  });
+  updateExamLanes();
+  updateExamNav();
+}
+function renderStaticTable(data){
+  var html = '<table class="simple" style="margin-bottom:10px;"><tbody>';
+  data.forEach(function(row){ html += "<tr>" + row.map(function(c){ return "<td>"+escapeHtml(c)+"</td>"; }).join("") + "</tr>"; });
+  return html + "</tbody></table>";
+}
+function updateExamLanes(){
+  var lanes = document.getElementById("lanes").children;
+  for (var i=0;i<lanes.length;i++) lanes[i].classList.toggle("done", state.exam.answers[i] !== null);
+}
+function updateExamNav(){
+  var ex = state.exam;
+  document.getElementById("exam-prev-btn").style.visibility = ex.current===0 ? "hidden":"visible";
+  var nextBtn = document.getElementById("exam-next-btn");
+  nextBtn.disabled = ex.answers[ex.current] === null;
+  nextBtn.textContent = ex.current === ex.questions.length-1 ? "Terminar avaliação" : "Seguinte";
+}
+document.getElementById("exam-prev-btn").addEventListener("click", function(){
+  if (state.exam.current>0){ state.exam.current--; renderExamQuestion(); }
+});
+document.getElementById("exam-next-btn").addEventListener("click", function(){
+  var ex = state.exam;
+  if (ex.current < ex.questions.length-1){ ex.current++; renderExamQuestion(); }
+  else finishExam();
+});
+
+function finishExam(){
+  clearInterval(examTimerInterval);
+  detachAntiCopyMonitoring();
+  document.getElementById("exam-nav").style.display = "none";
+  document.getElementById("timer-wrap").style.display = "none";
+  var ex = state.exam;
+  try{ localStorage.removeItem("adn_clock_" + ex.test.code); }catch(e){}
+  var score = 0, total = 0;
+  var review = ex.questions.map(function(q,i){
+    total += q.points;
+    var correct = q.type === "mc" ? (ex.answers[i] === q.correctIndex) : (ex.answers[i] === q.correctBool);
+    if (correct) score += q.points;
+    return { q:q, given: ex.answers[i], correct: correct };
+  });
+  var pct = total ? Math.round((score/total)*100) : 0;
+  var grade = toGrade20(pct);
+  var submittedAt = Date.now();
+
+  document.getElementById("ar-ring").style.setProperty("--pct", pct);
+  document.getElementById("ar-score").textContent = fmtGrade(grade) + "/20";
+  document.querySelector("#ar-ring .result-of").textContent = "valores (" + score + "/" + total + " pts)";
+  var msg = pct>=80 ? "Excelente desempenho!" : pct>=50 ? "Bom trabalho — reveja os pontos assinalados." : "Vale a pena rever a matéria.";
+  document.getElementById("ar-msg").textContent = msg + " Nota: " + fmtGrade(grade) + " valores.";
+
+  document.getElementById("ar-review").innerHTML = review.map(function(r,i){
+    var yourTxt = r.q.type==="mc" ? (r.given===null?"Sem resposta":r.q.options[r.given]) : (r.given===null?"Sem resposta":(r.given?"Verdadeiro":"Falso"));
+    var correctTxt = r.q.type==="mc" ? r.q.options[r.q.correctIndex] : (r.q.correctBool?"Verdadeiro":"Falso");
+    return '<div class="card" style="padding:13px;"><p style="font-weight:600; font-size:14px; margin:0 0 8px 0;">'+(i+1)+'. '+escapeHtml(r.q.text)+'</p>'+
+      '<p class="small" style="margin:0 0 3px 0;"><span class="pill '+(r.correct?'accent':'warn')+'">'+(r.correct?"CERTO":"SUA RESPOSTA")+'</span> '+escapeHtml(String(yourTxt))+'</p>'+
+      (r.correct? "" : '<p class="small" style="margin:0;"><span class="pill accent">CORRETA</span> '+escapeHtml(String(correctTxt))+'</p>') + '</div>';
+  }).join("");
+
+  var resultObjBase = {
+    adnResult:true, testCode: ex.test.code, testTitle: ex.test.title,
+    studentName: ex.studentName, studentIdNumber: ex.studentIdNumber, studentPhoto: ex.studentPhoto || null,
+    score:score, total:total, pct:pct, grade20: grade, submittedAt: submittedAt, violations: ex.violations
+  };
+  document.getElementById("ar-message").value = "";
+  function buildEncoded(){
+    var obj = Object.assign({}, resultObjBase, { studentMessage: document.getElementById("ar-message").value.trim() });
+    var j = JSON.stringify(obj);
+    var enc; try{ enc = btoa(unescape(encodeURIComponent(j))); }catch(e){ enc = j; }
+    document.getElementById("ar-code").value = enc;
+    return { json:j, encoded:enc };
+  }
+  buildEncoded();
+  document.getElementById("ar-message").addEventListener("input", buildEncoded);
+
+  document.getElementById("ar-copy-btn").onclick = function(){ copyToClipboard(buildEncoded().encoded); };
+  document.getElementById("ar-download-btn").onclick = function(){ var r = buildEncoded(); downloadOrCopy("resultado_"+ex.test.code+".adnres.json", r.json); };
+  document.getElementById("ar-whatsapp-btn").onclick = function(){
+    var r = buildEncoded();
+    var msg = "Resultado ADN — " + ex.test.title + "\nAluno: " + ex.studentName + " (" + ex.studentIdNumber + ")\nNota: " + fmtGrade(grade) + "/20\n\nCódigo para importar na Caderneta:\n" + r.encoded;
+    window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
+  };
+  document.getElementById("ar-email-btn").onclick = function(){
+    var r = buildEncoded();
+    var subject = "Resultado ADN — " + ex.test.title + " — " + ex.studentName;
+    var body = "Aluno: " + ex.studentName + " (" + ex.studentIdNumber + ")\nNota: " + fmtGrade(grade) + "/20\n\nCódigo para importar na Caderneta:\n" + r.encoded;
+    window.open("mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body), "_blank");
+  };
+  document.getElementById("ar-pdf-btn").onclick = function(){
+    document.getElementById("screen-aluno-resultado").classList.add("printing");
+    window.print();
+    setTimeout(function(){ document.getElementById("screen-aluno-resultado").classList.remove("printing"); }, 500);
+  };
+
+  showScreen("screen-aluno-resultado");
+}
+document.getElementById("ar-new-exam-btn").addEventListener("click", function(){
+  document.getElementById("aluno-code-input").value = "";
+  document.getElementById("aluno-name").value = "";
+  document.getElementById("aluno-idnum").value = "";
+  resetAlunoFlow();
+});
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+(function(){
+  try{
+    var params = new URLSearchParams(window.location.search);
+    var wantsAdmin = (params.get("modo") === "admin" || params.get("role") === "admin");
+    var wantsProf = (params.get("modo") === "professor" || params.get("role") === "professor");
+    var wantsAluno = (params.get("modo") === "aluno" || params.get("role") === "aluno");
+    if (wantsAdmin){
+      state.role = "professor";
+      state.isAdminEntry = true;
+      safeSet(STORE_KEYS.role, "professor");
+    } else if (wantsProf){
+      state.role = "professor";
+      safeSet(STORE_KEYS.role, "professor");
+    } else if (wantsAluno){
+      state.role = "aluno";
+      safeSet(STORE_KEYS.role, "aluno");
+    } else if (!state.role){
+      // Sem parâmetro e sem perfil guardado neste dispositivo: a interface
+      // pública nunca mostra a opção de Professor — assume-se Aluno.
+      state.role = "aluno";
+      safeSet(STORE_KEYS.role, "aluno");
+    }
+  }catch(e){}
+})();
+applyRoleUI();
+
+})();
+</script>
+</body>
+</html>
